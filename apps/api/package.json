@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "pnpm --filter @setsuzoku/shared run build && tsc && node build.js",
+    "build": "node build.js",
     "start": "node index.js",
     "test": "vitest run"
   },

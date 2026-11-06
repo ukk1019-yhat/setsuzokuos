@@ -5,7 +5,7 @@
       "root": "apps/api",
       "framework": "express",
       "entrypoint": "index.js",
-      "buildCommand": "pnpm --filter @setsuzoku/shared run build && pnpm run build"
+      "buildCommand": "pnpm run build"
     },
     "web": {
       "root": "apps/web",
