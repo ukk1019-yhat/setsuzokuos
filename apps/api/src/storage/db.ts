@@ -316,6 +316,31 @@ export interface PaymentWebhookEventRecord {
   processedAt: Date;
 }
 
+export interface NotificationRecord {
+  id: string;
+  organizationId: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: string;
+  linkUrl?: string | null;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+export interface FileRecord {
+  id: string;
+  organizationId: string;
+  projectId?: string | null;
+  category: string;
+  originalName: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedById?: string | null;
+  createdAt: Date;
+}
+
 /**
  * Robust Database Repository supporting high-speed in-memory transactional storage
  * with full relational integrity, uniqueness checks, and multi-tenancy scoping.
@@ -343,6 +368,8 @@ export class DatabaseRepository {
   public invoiceItems: Map<string, InvoiceItemRecord> = new Map();
   public payments: Map<string, PaymentRecord> = new Map();
   public paymentWebhookEvents: Map<string, PaymentWebhookEventRecord> = new Map();
+  public notifications: Map<string, NotificationRecord> = new Map();
+  public files: Map<string, FileRecord> = new Map();
 
   constructor() {
     this.seedDefaultData();
