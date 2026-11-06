@@ -144,3 +144,5 @@ pnpm --filter @setsuzoku/web run dev
 
 Visit `http://localhost:3000` to access the application.
 
+
+# setsuzokuos
