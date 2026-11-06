@@ -403,7 +403,7 @@ export class DatabaseRepository {
   public seedDefaultData(): void {
     const adminUser: UserRecord = {
       id: 'user_admin_001',
-      email: 'admin@setsuzoku.io',
+      email: 'info@setsuzoku.in',
       passwordHash: '$2a$10$qFB9SofDky4hVJ8m18HnTuq4yta1TB3LQQDDhHgvVlVIX4NTh08Ge', // Password123!
       fullName: 'Setsuzoku Admin',
       phone: '+91 99999 00000',
@@ -418,8 +418,8 @@ export class DatabaseRepository {
       id: 'org_demo_001',
       name: 'Setsuzoku Media Labs',
       slug: 'setsuzoku-media-labs',
-      logoUrl: null,
-      businessEmail: 'admin@setsuzoku.io',
+      logoUrl: '/setsuzoku-logo.png',
+      businessEmail: 'info@setsuzoku.in',
       phone: '+91 99999 00000',
       addressLine1: '100 Silicon Boulevard',
       city: 'Mumbai',

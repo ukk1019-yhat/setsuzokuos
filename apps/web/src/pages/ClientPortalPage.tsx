@@ -5,6 +5,7 @@ import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import { Logo } from '../components/common/Logo';
 import { ApprovalDecision } from '@setsuzoku/shared';
 import {
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
   Layers,
   ArrowRight,
   CreditCard,
+  Mail,
 } from 'lucide-react';
 
 export const ClientPortalPage: React.FC = () => {
@@ -106,22 +108,48 @@ export const ClientPortalPage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Client Portal Header */}
-      <div className="p-6 bg-gradient-to-r from-brand-navy to-[#1E3B50] text-white rounded-xl shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs uppercase font-bold tracking-wider text-brand-teal block">
-            Dedicated Client Portal &bull; {currentOrg?.name}
-          </span>
-          <h1 className="text-2xl font-bold mt-1 text-white">
-            Welcome, {data?.client?.name || user?.fullName}
-          </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            {data?.client?.company ? `Account: ${data.client.company}` : 'Secure Client Operations Environment'}
-          </p>
+      <div className="p-6 bg-gradient-to-r from-brand-navy via-[#142B3A] to-[#1E3B50] text-white rounded-xl shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6 border border-slate-700/50">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-xl bg-white p-1.5 shadow-md flex items-center justify-center flex-shrink-0">
+            <img
+              src="/setsuzoku-logo.png"
+              alt="SETSUZOKU"
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase font-bold tracking-wider text-brand-teal">
+                Client Operations Portal
+              </span>
+              <span className="text-[10px] bg-brand-teal/20 text-brand-teal px-2 py-0.5 rounded-full font-semibold border border-brand-teal/30">
+                Verified
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold mt-1 text-white">
+              Welcome, {data?.client?.name || user?.fullName}
+            </h1>
+            <p className="text-xs text-slate-300 mt-0.5">
+              {data?.client?.company ? `Account: ${data.client.company}` : 'Secure Enterprise Collaboration Hub'} &bull; Direct Agency Desk:{' '}
+              <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-medium hover:underline">
+                info@setsuzoku.in
+              </a>
+            </p>
+          </div>
         </div>
 
-        <Badge variant="teal" size="md">
-          Client Verified
-        </Badge>
+        <div className="flex md:flex-col items-end gap-2">
+          <Badge variant="teal" size="md">
+            Active Client Account
+          </Badge>
+          <a
+            href="mailto:info@setsuzoku.in"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition border border-white/15"
+          >
+            <Mail className="w-3.5 h-3.5 text-brand-teal" />
+            <span>Contact Desk</span>
+          </a>
+        </div>
       </div>
 
       {/* Pending Deliverable Approvals Queue */}
@@ -414,6 +442,28 @@ export const ClientPortalPage: React.FC = () => {
           </form>
         </Modal>
       )}
+
+      {/* Client Support Assistance Card */}
+      <div className="bg-white border border-brand-border rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-brand-teal flex-shrink-0">
+            <Mail className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-brand-navy">Need Custom Deliverables or Billing Help?</h4>
+            <p className="text-[11px] text-brand-muted">
+              Direct access to our senior project directors: <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-semibold hover:underline">info@setsuzoku.in</a>
+            </p>
+          </div>
+        </div>
+        <a
+          href="mailto:info@setsuzoku.in"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-brand-border rounded-lg text-xs font-semibold text-brand-navy transition"
+        >
+          <Mail className="w-3.5 h-3.5 text-brand-teal" />
+          <span>Email Support</span>
+        </a>
+      </div>
     </div>
   );
 };

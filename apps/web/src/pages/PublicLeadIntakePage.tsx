@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { apiRequest } from '../api/client';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
-import { Layers, CheckCircle2, ArrowRight, Building, Mail, Sparkles } from 'lucide-react';
+import { Logo } from '../components/common/Logo';
+import { CheckCircle2, ArrowRight, Mail, Sparkles, Phone, HelpCircle } from 'lucide-react';
 
 interface OrgPublicInfo {
   id: string;
@@ -116,25 +117,26 @@ export const PublicLeadIntakePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F7F9FB] flex flex-col justify-between font-sans text-brand-navy">
       {/* Header Bar */}
-      <header className="bg-white border-b border-brand-border px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="bg-white border-b border-brand-border px-6 py-3.5 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-brand-teal text-white flex items-center justify-center font-bold shadow">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-brand-navy">{org?.name}</h1>
-            <span className="text-[10px] text-brand-teal font-medium tracking-wider uppercase block">
-              Direct Project Inquiry
-            </span>
-          </div>
+          <Logo size="sm" variant="badge" showSubtitle={true} />
         </div>
-        <Link
-          to="/login"
-          className="text-xs font-semibold text-brand-muted hover:text-brand-navy transition flex items-center gap-1.5"
-        >
-          <span>Staff Login</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        <div className="flex items-center gap-4">
+          <a
+            href="mailto:info@setsuzoku.in"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-brand-teal transition font-medium"
+          >
+            <Mail className="w-3.5 h-3.5 text-brand-teal" />
+            <span>info@setsuzoku.in</span>
+          </a>
+          <Link
+            to="/dashboard"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 text-brand-navy hover:bg-slate-50 transition flex items-center gap-1.5"
+          >
+            <span>Demo Console</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </header>
 
       {/* Main Content Area */}
@@ -298,12 +300,47 @@ export const PublicLeadIntakePage: React.FC = () => {
             </form>
           </div>
         )}
+
+        {/* Direct Inquiries & Contact Card */}
+        <div className="mt-8 bg-white border border-brand-border rounded-xl p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-brand-teal flex-shrink-0">
+              <Mail className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-brand-navy">Prefer to discuss directly?</h4>
+              <p className="text-xs text-brand-muted mt-0.5">
+                Our client directors are available at{' '}
+                <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-semibold hover:underline">
+                  info@setsuzoku.in
+                </a>
+              </p>
+            </div>
+          </div>
+          <a
+            href="mailto:info@setsuzoku.in"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-navy text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition shadow-sm"
+          >
+            <Mail className="w-3.5 h-3.5 text-brand-teal" />
+            <span>Email info@setsuzoku.in</span>
+          </a>
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-brand-border bg-white py-6 text-center text-xs text-brand-muted">
-        Powered by{' '}
-        <strong className="text-brand-navy">SETSUZOKU OS</strong> — From First Inquiry to Final Payment.
+      <footer className="border-t border-brand-border bg-white py-8 text-center text-xs text-brand-muted">
+        <div className="flex flex-col items-center justify-center gap-2 mb-3">
+          <Logo size="sm" showSubtitle={true} />
+        </div>
+        <p className="text-slate-600">
+          Official Inquiries & Support:{' '}
+          <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-bold hover:underline">
+            info@setsuzoku.in
+          </a>
+        </p>
+        <p className="text-[11px] text-slate-400 mt-1">
+          SETSUZOKU OS &bull; Unified Agency Operating System &bull; From First Inquiry to Final Payment.
+        </p>
       </footer>
     </div>
   );

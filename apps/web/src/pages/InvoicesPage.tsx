@@ -724,10 +724,19 @@ export const InvoicesPage: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[92vh] overflow-y-auto">
             {/* Header Document */}
             <div className="flex justify-between items-start border-b border-slate-200 pb-6">
-              <div>
-                <div className="text-xs font-bold text-brand-teal tracking-widest uppercase">SETSUZOKU OS</div>
-                <h2 className="text-2xl font-black text-brand-navy mt-1">INVOICE</h2>
-                <div className="text-xs text-brand-muted mt-1 font-mono">{previewInvoice.invoiceNumber}</div>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-white p-1 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+                  <img
+                    src="/setsuzoku-logo.png"
+                    alt="SETSUZOKU"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-brand-teal tracking-widest uppercase">SETSUZOKU MEDIA LABS</div>
+                  <h2 className="text-2xl font-black text-brand-navy mt-0.5">INVOICE</h2>
+                  <div className="text-xs text-brand-muted mt-0.5 font-mono">{previewInvoice.invoiceNumber}</div>
+                </div>
               </div>
               <div className="text-right">
                 <span
@@ -767,7 +776,10 @@ export const InvoicesPage: React.FC = () => {
               <div className="text-right">
                 <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Issued By:</span>
                 <div className="font-bold text-brand-navy text-sm mt-1">{currentOrg?.name}</div>
-                <div className="text-slate-500">{currentOrg?.currency} Billing Entity</div>
+                <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-medium hover:underline block">
+                  info@setsuzoku.in
+                </a>
+                <div className="text-slate-500 text-[11px] mt-0.5">Tax ID / GSTIN: {currentOrg?.taxNumber || '27AABCS1429B1Z'}</div>
               </div>
             </div>
 
@@ -859,7 +871,13 @@ export const InvoicesPage: React.FC = () => {
               </div>
             )}
 
-            <div className="mt-8 flex justify-end gap-3">
+            {/* Invoice Footer Terms & Direct Support */}
+            <div className="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 gap-2">
+              <span>{previewInvoice.paymentTerms || 'Payment terms: Due within 14 days of invoice.'}</span>
+              <span>Billing Support: <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-semibold hover:underline">info@setsuzoku.in</a></span>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setPreviewInvoice(null)}
                 className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50"

@@ -351,11 +351,22 @@ export const QuotationsPage: React.FC = () => {
 
             {/* Document Header */}
             <div className="grid grid-cols-2 gap-6 text-xs p-4 bg-white border border-brand-border rounded-lg shadow-sm">
-              <div>
-                <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider block">Service Provider</span>
-                <span className="font-bold text-brand-navy text-sm block mt-0.5">{currentOrg?.name}</span>
-                <span className="text-brand-muted block mt-0.5">{currentOrg?.businessEmail}</span>
-                <span className="text-brand-muted block mt-0.5">Tax ID: {currentOrg?.taxNumber || '—'}</span>
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white p-1 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+                  <img
+                    src="/setsuzoku-logo.png"
+                    alt="SETSUZOKU"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider block">Service Provider</span>
+                  <span className="font-bold text-brand-navy text-sm block mt-0.5">{currentOrg?.name}</span>
+                  <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-medium hover:underline block mt-0.5">
+                    info@setsuzoku.in
+                  </a>
+                  <span className="text-brand-muted block mt-0.5">Tax ID: {currentOrg?.taxNumber || '27AABCS1429B1Z'}</span>
+                </div>
               </div>
 
               <div>

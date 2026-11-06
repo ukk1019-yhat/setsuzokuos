@@ -12,7 +12,7 @@ const DEMO_TOKEN =
 
 const DEMO_USER: UserDto = {
   id: 'user_admin_001',
-  email: 'admin@setsuzoku.io',
+  email: 'info@setsuzoku.in',
   fullName: 'Agency Director (Demo)',
   isEmailVerified: true,
   createdAt: new Date().toISOString(),
@@ -22,8 +22,8 @@ const DEMO_ORG: OrganizationDto = {
   id: 'org_demo_001',
   name: 'Setsuzoku Media Labs',
   slug: 'setsuzoku-media-labs',
-  logoUrl: null,
-  businessEmail: 'admin@setsuzoku.io',
+  logoUrl: '/setsuzoku-logo.png',
+  businessEmail: 'info@setsuzoku.in',
   phone: '+91 99999 00000',
   country: 'India',
   currency: 'INR',

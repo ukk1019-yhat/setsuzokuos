@@ -85,6 +85,26 @@ export const SettingsPage: React.FC = () => {
       <form onSubmit={handleSave} className="space-y-6">
         <Card title="Business Identity" subtitle="Core branding and registered entity name">
           <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-brand-text mb-1.5 uppercase tracking-wide">
+                Brand Logo & Identity
+              </label>
+              <div className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <div className="w-16 h-16 rounded-xl bg-white p-1.5 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
+                  <img
+                    src="/setsuzoku-logo.png"
+                    alt="SETSUZOKU"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-brand-navy block">Official SETSUZOKU Brand Identity</span>
+                  <span className="text-[11px] text-brand-muted block">Applied across client portals, quotations, invoices, and lead intake forms.</span>
+                  <span className="text-[11px] text-brand-teal font-semibold mt-0.5 block">Primary Contact: info@setsuzoku.in</span>
+                </div>
+              </div>
+            </div>
+
             <Input
               label="Legal Organization Name"
               required
@@ -98,7 +118,7 @@ export const SettingsPage: React.FC = () => {
               type="email"
               value={businessEmail}
               onChange={(e) => setBusinessEmail(e.target.value)}
-              placeholder="billing@agency.com"
+              placeholder="info@setsuzoku.in"
             />
 
             <div>
