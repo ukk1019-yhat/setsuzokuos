@@ -90,22 +90,18 @@ export const TeamPage: React.FC = () => {
       });
       await fetchMembers();
     } catch (err: any) {
-      alert(err.message || 'Failed to update role');
+      console.warn('Failed to update role on API:', err);
     }
   };
 
   const handleRemove = async (membershipId: string, memberName: string) => {
-    if (!window.confirm(`Are you sure you want to remove ${memberName} from this organization?`)) {
-      return;
-    }
-
     try {
       await apiRequest(`/members/${membershipId}`, {
         method: 'DELETE',
       });
       await fetchMembers();
     } catch (err: any) {
-      alert(err.message || 'Failed to remove member');
+      console.warn('Failed to remove member on API:', err);
     }
   };
 

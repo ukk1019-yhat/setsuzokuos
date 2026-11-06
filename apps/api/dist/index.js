@@ -6,7 +6,7 @@ const env_1 = require("./config/env");
 const app = (0, app_1.createApp)();
 exports.app = app;
 // Only listen on port when running directly (not required as a module by tests or Vercel serverless)
-if (require.main === module) {
+if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.main === module) {
     app.listen(env_1.ENV.PORT, () => {
         console.log(`🚀 [SETSUZOKU OS API] Server listening on port ${env_1.ENV.PORT}`);
         console.log(`🔗 REST Base: http://localhost:${env_1.ENV.PORT}/api/v1`);
@@ -14,9 +14,3 @@ if (require.main === module) {
     });
 }
 exports.default = app;
-// Guarantee that CommonJS require() returns the request handler function directly for Vercel Serverless
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = app;
-    module.exports.default = app;
-    module.exports.app = app;
-}
