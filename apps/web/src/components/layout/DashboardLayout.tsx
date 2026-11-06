@@ -20,7 +20,6 @@ import {
   Bell,
   Search,
   Layers,
-  Sparkles,
   ExternalLink,
   Mail,
 } from 'lucide-react';
@@ -153,20 +152,15 @@ export const DashboardLayout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navbar */}
         <header className="h-16 bg-white border-b border-brand-border flex items-center justify-between px-8 flex-shrink-0 shadow-sm">
-          {/* Search bar & Live Showcase Pill */}
+          {/* Search bar */}
           <div className="flex items-center gap-4">
-            <div className="relative w-72">
+            <div className="relative w-80">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 placeholder="Search leads, projects, clients, invoices..."
                 className="w-full pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-brand-border rounded-md focus:outline-none focus:ring-1 focus:ring-brand-teal focus:bg-white transition"
               />
-            </div>
-
-            <div className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1 bg-teal-50 border border-teal-200 text-teal-800 rounded-full text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-brand-teal" />
-              <span>Interactive Showcase &bull; Full Modules Unlocked</span>
             </div>
           </div>
 
