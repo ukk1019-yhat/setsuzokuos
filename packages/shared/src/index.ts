@@ -480,6 +480,16 @@ export const RazorpayWebhookSchema = z.object({
 });
 export type RazorpayWebhookInput = z.infer<typeof RazorpayWebhookSchema>;
 
+export const CreateFileSchema = z.object({
+  projectId: z.string().uuid().optional().nullable(),
+  category: z.string().default('GENERAL'),
+  originalName: z.string().min(1, 'Original file name is required'),
+  storageKey: z.string().min(1, 'Storage key is required'),
+  mimeType: z.string().min(1, 'Mime type is required'),
+  sizeBytes: z.number().positive('File size must be positive'),
+});
+export type CreateFileInput = z.infer<typeof CreateFileSchema>;
+
 // ==========================================
 // 3. COMMON INTERFACES & DTOs
 // ==========================================
@@ -817,6 +827,33 @@ export interface BusinessOverviewReportDto {
   };
   recentInvoices: InvoiceDto[];
   recentPayments: PaymentDto[];
+}
+
+export interface NotificationDto {
+  id: string;
+  organizationId: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: string;
+  linkUrl?: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface FileRecordDto {
+  id: string;
+  organizationId: string;
+  projectId?: string | null;
+  projectName?: string | null;
+  category: string;
+  originalName: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  downloadUrl: string;
+  uploadedById?: string | null;
+  createdAt: string;
 }
 
 export interface ApiResponse<T = any> {
