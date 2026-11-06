@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 
-interface CardProps {
+export interface CardProps {
   children: ReactNode;
   className?: string;
   title?: string;
@@ -16,18 +16,17 @@ export const Card: React.FC<CardProps> = ({
   action,
 }) => {
   return (
-    <div className={`bg-white rounded-lg border border-brand-border shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-white rounded border border-brand-border overflow-hidden ${className}`}>
       {(title || action) && (
-        <div className="px-5 py-4 border-b border-brand-border flex items-center justify-between">
+        <div className="px-4 py-3 border-b border-brand-border flex items-center justify-between">
           <div>
-            {title && <h3 className="text-base font-semibold text-brand-text">{title}</h3>}
+            {title && <h3 className="text-[13px] font-semibold text-brand-text">{title}</h3>}
             {subtitle && <p className="text-xs text-brand-muted mt-0.5">{subtitle}</p>}
           </div>
           {action && <div>{action}</div>}
         </div>
       )}
-      <div className="p-5">{children}</div>
+      <div className="p-4">{children}</div>
     </div>
   );
 };
-

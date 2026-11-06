@@ -4,23 +4,31 @@
 
 @layer base {
   body {
-    @apply bg-brand-bg text-brand-text antialiased selection:bg-brand-teal/20 selection:text-brand-navy;
+    @apply bg-brand-bg text-brand-text antialiased selection:bg-brand-accent/20 selection:text-brand-text text-[13px] leading-relaxed;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  input, select, textarea, button {
+    font-family: inherit;
   }
 }
 
-/* Custom scrollbar */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom hairline scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 3px;
+  background: #D1D5DB;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #9CA3AF;
 }
-

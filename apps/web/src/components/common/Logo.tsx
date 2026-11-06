@@ -42,27 +42,21 @@ export const Logo: React.FC<LogoProps> = ({
   }
 
   if (variant === 'sidebar') {
-    // Tailored for dark enterprise sidebars (#0F212D / #142B3A)
     return (
-      <div className={`flex items-center gap-3 ${className}`}>
-        <div className="w-10 h-10 rounded-xl bg-white p-1 border border-slate-700/60 shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className={`flex items-center gap-2.5 ${className}`}>
+        <div className="w-6 h-6 rounded bg-white p-0.5 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
           <img
             src={logoImg}
-            alt="SETSUZOKU"
+            alt="Setsuzoku"
             className="w-full h-full object-contain"
           />
         </div>
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-bold tracking-tight text-white font-sans">
-              SETSUZOKU
-            </span>
-            <span className="text-[9px] font-bold px-1.5 py-0.2 bg-brand-teal/20 text-brand-teal rounded border border-brand-teal/30">
-              OS
-            </span>
-          </div>
-          <span className="text-[10px] text-slate-400 font-medium tracking-wide truncate">
-            CONNECT &bull; CREATE &bull; GROW
+          <span className="text-[13px] font-semibold text-white leading-none">
+            Setsuzoku
+          </span>
+          <span className="text-[11px] text-brand-sidebar-text leading-none mt-1">
+            Media Labs
           </span>
         </div>
       </div>
