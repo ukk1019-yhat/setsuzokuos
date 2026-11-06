@@ -12,16 +12,21 @@ export class ApiError extends Error {
   }
 }
 
+const DEMO_FALLBACK_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyX2FkbWluXzAwMSIsImlhdCI6MTc5Mzk4OTI4OSwiZXhwIjoxODI1NTI1Mjg5fQ.546mN5cJR-gjybNYmwAH2vgNC35bOXR0hfaS0OaWAfc';
+
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const token =
     localStorage.getItem('setsuzoku_access_token') ||
-    localStorage.getItem('accessToken');
+    localStorage.getItem('accessToken') ||
+    DEMO_FALLBACK_TOKEN;
   const activeOrgId =
     localStorage.getItem('setsuzoku_active_org_id') ||
-    localStorage.getItem('activeOrgId');
+    localStorage.getItem('activeOrgId') ||
+    'org_demo_001';
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

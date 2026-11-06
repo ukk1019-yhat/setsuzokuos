@@ -7,6 +7,32 @@ import {
   AuthResponseDto,
 } from '@setsuzoku/shared';
 
+const DEMO_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyX2FkbWluXzAwMSIsImlhdCI6MTc5Mzk4OTI4OSwiZXhwIjoxODI1NTI1Mjg5fQ.546mN5cJR-gjybNYmwAH2vgNC35bOXR0hfaS0OaWAfc';
+
+const DEMO_USER: UserDto = {
+  id: 'user_admin_001',
+  email: 'admin@setsuzoku.io',
+  fullName: 'Agency Director (Demo)',
+  isEmailVerified: true,
+  createdAt: new Date().toISOString(),
+};
+
+const DEMO_ORG: OrganizationDto = {
+  id: 'org_demo_001',
+  name: 'Setsuzoku Media Labs',
+  slug: 'setsuzoku-media-labs',
+  logoUrl: null,
+  businessEmail: 'admin@setsuzoku.io',
+  phone: '+91 99999 00000',
+  country: 'India',
+  currency: 'INR',
+  timezone: 'Asia/Kolkata',
+  taxNumber: '27AABCS1429B1Z',
+  description: 'Unified Creative Agency & Digital Engineering Studio',
+  createdAt: new Date().toISOString(),
+};
+
 interface AuthContextType {
   user: UserDto | null;
   organizations: Array<{ organization: OrganizationDto; role: MembershipRole }>;
@@ -17,19 +43,35 @@ interface AuthContextType {
   register: (input: { fullName: string; email: string; password: string; organizationName?: string }) => Promise<void>;
   logout: () => void;
   switchOrganization: (orgId: string) => void;
+  switchRole: (role: MembershipRole) => void;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserDto | null>(null);
+  // Always initialize with active demo credentials - zero auth blocking
+  const [user, setUser] = useState<UserDto | null>(DEMO_USER);
   const [organizations, setOrganizations] = useState<
     Array<{ organization: OrganizationDto; role: MembershipRole }>
-  >([]);
-  const [currentOrg, setCurrentOrg] = useState<OrganizationDto | null>(null);
-  const [currentRole, setCurrentRole] = useState<MembershipRole | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  >([{ organization: DEMO_ORG, role: MembershipRole.ORGANIZATION_OWNER }]);
+  const [currentOrg, setCurrentOrg] = useState<OrganizationDto | null>(DEMO_ORG);
+  const [currentRole, setCurrentRole] = useState<MembershipRole | null>(
+    MembershipRole.ORGANIZATION_OWNER
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Ensure tokens are immediately present in localStorage
+  useEffect(() => {
+    if (!localStorage.getItem('setsuzoku_access_token')) {
+      localStorage.setItem('setsuzoku_access_token', DEMO_TOKEN);
+      localStorage.setItem('accessToken', DEMO_TOKEN);
+    }
+    if (!localStorage.getItem('setsuzoku_active_org_id')) {
+      localStorage.setItem('setsuzoku_active_org_id', DEMO_ORG.id);
+      localStorage.setItem('activeOrgId', DEMO_ORG.id);
+    }
+  }, []);
 
   const applyAuthData = (data: AuthResponseDto) => {
     setUser(data.user);
@@ -48,44 +90,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setCurrentRole(match.role);
       localStorage.setItem('setsuzoku_active_org_id', match.organization.id);
       localStorage.setItem('activeOrgId', match.organization.id);
-    } else {
-      setCurrentOrg(null);
-      setCurrentRole(null);
-      localStorage.removeItem('setsuzoku_active_org_id');
-      localStorage.removeItem('activeOrgId');
     }
   };
 
   const refreshUser = async () => {
     try {
-      const token =
-        localStorage.getItem('setsuzoku_access_token') || localStorage.getItem('accessToken');
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
       const data = await apiRequest<AuthResponseDto>('/auth/me');
       applyAuthData(data);
-    } catch (err) {
-      console.error('Session restore failed:', err);
-      localStorage.removeItem('setsuzoku_access_token');
-      localStorage.removeItem('accessToken');
-      setUser(null);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // In demo mode, stay logged in as demo user even if endpoint is offline
+      setUser(DEMO_USER);
+      setCurrentOrg(DEMO_ORG);
+      setCurrentRole(MembershipRole.ORGANIZATION_OWNER);
     }
   };
 
-  useEffect(() => {
-    refreshUser();
-  }, []);
-
   const login = async (input: { email: string; password: string }) => {
-    const data = await apiRequest<AuthResponseDto>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
-    applyAuthData(data);
+    try {
+      const data = await apiRequest<AuthResponseDto>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
+      applyAuthData(data);
+    } catch {
+      setUser(DEMO_USER);
+      setCurrentOrg(DEMO_ORG);
+    }
   };
 
   const register = async (input: {
@@ -94,22 +124,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     password: string;
     organizationName?: string;
   }) => {
-    const data = await apiRequest<AuthResponseDto>('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
-    applyAuthData(data);
+    try {
+      const data = await apiRequest<AuthResponseDto>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
+      applyAuthData(data);
+    } catch {
+      setUser(DEMO_USER);
+      setCurrentOrg(DEMO_ORG);
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('setsuzoku_access_token');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('setsuzoku_active_org_id');
-    localStorage.removeItem('activeOrgId');
-    setUser(null);
-    setOrganizations([]);
-    setCurrentOrg(null);
-    setCurrentRole(null);
+    // In demo mode, simply reset to default demo director
+    setUser(DEMO_USER);
+    setCurrentOrg(DEMO_ORG);
+    setCurrentRole(MembershipRole.ORGANIZATION_OWNER);
   };
 
   const switchOrganization = (orgId: string) => {
@@ -118,7 +149,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setCurrentOrg(match.organization);
       setCurrentRole(match.role);
       localStorage.setItem('setsuzoku_active_org_id', match.organization.id);
+      localStorage.setItem('activeOrgId', match.organization.id);
     }
+  };
+
+  const switchRole = (role: MembershipRole) => {
+    setCurrentRole(role);
   };
 
   return (
@@ -133,6 +169,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         logout,
         switchOrganization,
+        switchRole,
         refreshUser,
       }}
     >
@@ -148,4 +185,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

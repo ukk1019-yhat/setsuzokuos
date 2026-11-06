@@ -16,16 +16,17 @@ import {
   BarChart3,
   Settings,
   ChevronDown,
-  LogOut,
+  RotateCcw,
   Bell,
   Search,
   Layers,
-  PlusCircle,
+  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
+import { MembershipRole } from '@setsuzoku/shared';
 
 export const DashboardLayout: React.FC = () => {
-  const { user, currentOrg, currentRole, organizations, switchOrganization, logout } = useAuth();
-  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
+  const { user, currentOrg, currentRole, switchRole, logout } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState([
     {
@@ -89,53 +90,17 @@ export const DashboardLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Organization Switcher Bar */}
-        <div className="px-4 py-3 border-b border-slate-800 relative">
-          <button
-            onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
-            className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-200 bg-slate-800/80 hover:bg-slate-800 rounded-md transition"
-          >
+        {/* Organization Showcase Bar */}
+        <div className="px-4 py-3 border-b border-slate-800">
+          <div className="flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-200 bg-slate-800/80 rounded-md">
             <div className="flex items-center gap-2 truncate">
               <Building2 className="w-3.5 h-3.5 text-brand-teal flex-shrink-0" />
-              <span className="truncate">{currentOrg?.name || 'Select Organization'}</span>
+              <span className="truncate font-semibold">{currentOrg?.name}</span>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
-          </button>
-
-          {orgDropdownOpen && (
-            <div className="absolute top-14 left-4 right-4 bg-white rounded-md shadow-xl border border-brand-border py-1 z-30">
-              <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-brand-muted tracking-wider border-b border-gray-100">
-                Switch Organization
-              </div>
-              {organizations.map((orgItem) => (
-                <button
-                  key={orgItem.organization.id}
-                  onClick={() => {
-                    switchOrganization(orgItem.organization.id);
-                    setOrgDropdownOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-gray-50 ${
-                    currentOrg?.id === orgItem.organization.id ? 'bg-teal-50/50 font-semibold text-brand-navy' : 'text-gray-700'
-                  }`}
-                >
-                  <span className="truncate">{orgItem.organization.name}</span>
-                  <span className="text-[10px] text-brand-muted capitalize">{orgItem.role.replace('_', ' ')}</span>
-                </button>
-              ))}
-              <div className="border-t border-gray-100 mt-1 pt-1">
-                <button
-                  onClick={() => {
-                    setOrgDropdownOpen(false);
-                    navigate('/onboarding');
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-brand-teal font-medium hover:bg-gray-50 flex items-center gap-1.5"
-                >
-                  <PlusCircle className="w-3.5 h-3.5" />
-                  <span>Create New Organization</span>
-                </button>
-              </div>
-            </div>
-          )}
+            <span className="text-[9px] bg-brand-teal/20 text-brand-teal px-1.5 py-0.5 rounded font-mono font-bold">
+              DEMO
+            </span>
+          </div>
         </div>
 
         {/* Navigation list */}
@@ -162,21 +127,21 @@ export const DashboardLayout: React.FC = () => {
         <div className="p-4 border-t border-slate-800 bg-[#0F212D] flex items-center justify-between">
           <div className="flex items-center gap-2.5 truncate">
             <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-white flex-shrink-0">
-              {user?.fullName?.charAt(0).toUpperCase() || 'U'}
+              {user?.fullName?.charAt(0).toUpperCase() || 'A'}
             </div>
             <div className="truncate">
               <span className="block text-xs font-medium text-white truncate">{user?.fullName}</span>
-              <span className="block text-[10px] text-slate-400 capitalize truncate">
-                {currentRole?.replace('_', ' ').toLowerCase() || 'Member'}
+              <span className="block text-[10px] text-brand-teal font-medium capitalize truncate">
+                {currentRole?.replace('_', ' ').toLowerCase() || 'Director'}
               </span>
             </div>
           </div>
           <button
             onClick={logout}
-            title="Sign out"
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition"
+            title="Reset demo session"
+            className="p-1.5 text-slate-400 hover:text-brand-teal hover:bg-slate-800 rounded transition flex items-center gap-1"
           >
-            <LogOut className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4" />
           </button>
         </div>
       </aside>
@@ -185,24 +150,58 @@ export const DashboardLayout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navbar */}
         <header className="h-16 bg-white border-b border-brand-border flex items-center justify-between px-8 flex-shrink-0 shadow-sm">
-          {/* Search bar */}
-          <div className="relative w-80">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Search leads, projects, clients, invoices..."
-              className="w-full pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-brand-border rounded-md focus:outline-none focus:ring-1 focus:ring-brand-teal focus:bg-white transition"
-            />
+          {/* Search bar & Live Showcase Pill */}
+          <div className="flex items-center gap-4">
+            <div className="relative w-72">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search leads, projects, clients, invoices..."
+                className="w-full pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-brand-border rounded-md focus:outline-none focus:ring-1 focus:ring-brand-teal focus:bg-white transition"
+              />
+            </div>
+
+            <div className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1 bg-teal-50 border border-teal-200 text-teal-800 rounded-full text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-brand-teal" />
+              <span>Interactive Showcase &bull; Full Modules Unlocked</span>
+            </div>
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-3 relative">
+            {/* Quick Client Portal Link */}
+            <NavLink
+              to="/portal"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border border-brand-teal text-brand-teal hover:bg-teal-50 transition"
+              title="Open Client Experience View"
+            >
+              <span>Client Portal</span>
+              <ExternalLink className="w-3 h-3" />
+            </NavLink>
+
+            {/* Role Switcher Pill */}
+            <div className="flex items-center gap-1.5 bg-gray-50 border border-brand-border px-2 py-1 rounded-md text-xs">
+              <span className="text-brand-muted text-[11px] font-medium hidden sm:inline">Role:</span>
+              <select
+                value={currentRole || MembershipRole.ORGANIZATION_OWNER}
+                onChange={(e) => switchRole(e.target.value as any)}
+                className="bg-transparent font-semibold text-brand-navy focus:outline-none cursor-pointer text-xs"
+              >
+                <option value={MembershipRole.ORGANIZATION_OWNER}>Owner (Full Access)</option>
+                <option value={MembershipRole.MANAGER}>Manager</option>
+                <option value={MembershipRole.EMPLOYEE}>Employee</option>
+                <option value={MembershipRole.FINANCE}>Finance</option>
+                <option value={MembershipRole.CLIENT}>Client</option>
+              </select>
+            </div>
+
             {currentOrg && (
-              <Badge variant="teal" size="md">
-                {currentOrg.currency} &bull; {currentOrg.country}
+              <Badge variant="teal" size="sm" className="hidden sm:inline-flex">
+                {currentOrg.currency}
               </Badge>
             )}
 
+            {/* Notifications Popover */}
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -246,11 +245,6 @@ export const DashboardLayout: React.FC = () => {
                 </div>
               )}
             </div>
-
-            <div className="h-5 w-px bg-gray-200" />
-            <span className="text-xs text-brand-muted">
-              Role: <strong className="text-brand-text font-semibold">{currentRole}</strong>
-            </span>
           </div>
         </header>
 

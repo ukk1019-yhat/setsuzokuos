@@ -1,10 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { DashboardLayout } from './components/layout/DashboardLayout';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { OnboardingPage } from './pages/OnboardingPage';
 import { PublicLeadIntakePage } from './pages/PublicLeadIntakePage';
 import { DashboardOverviewPage } from './pages/DashboardOverviewPage';
 import { TeamPage } from './pages/TeamPage';
@@ -19,74 +16,20 @@ import { ClientPortalPage } from './pages/ClientPortalPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { PaymentsPage } from './pages/PaymentsPage';
 import { ReportsPage } from './pages/ReportsPage';
-import { ModulePlaceholderPage } from './pages/ModulePlaceholderPage';
-
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading, currentOrg } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-bg text-brand-navy">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-8 w-8 text-brand-teal" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          <span className="text-xs font-semibold tracking-wider uppercase text-brand-muted">
-            Loading Setsuzoku OS...
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!currentOrg && window.location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  return <>{children}</>;
-};
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* Public Intake Portals */}
           <Route path="/intake" element={<PublicLeadIntakePage />} />
           <Route path="/intake/:orgSlug" element={<PublicLeadIntakePage />} />
 
-          {/* Onboarding */}
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute>
-                <OnboardingPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Authenticated Dashboard Shell */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
+          {/* Instant Open Showcase - All Modules Fully Accessible Without Login */}
+          <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardOverviewPage />} />
-            <Route path="team" element={<TeamPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-
-            {/* Connected Modules */}
             <Route path="leads" element={<LeadsPage />} />
             <Route path="clients" element={<ClientsPage />} />
             <Route path="quotations" element={<QuotationsPage />} />
@@ -97,13 +40,19 @@ export const App: React.FC = () => {
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="team" element={<TeamPage />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
+          {/* Any auth routes redirect straight to the live platform */}
+          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/register" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/onboarding" element={<Navigate to="/dashboard" replace />} />
+
           {/* Catch-all redirect */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
   );
 };
-

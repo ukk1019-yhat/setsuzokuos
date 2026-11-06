@@ -525,6 +525,291 @@ export class DatabaseRepository {
       totalPrice: 100000,
     };
     this.invoiceItems.set(demoItem.id, demoItem);
+
+    // --- Additional Demo Clients ---
+    const client2: ClientRecord = {
+      id: 'client_demo_002',
+      organizationId: demoOrg.id,
+      name: 'Priya Sharma',
+      company: 'Vertex Retail Group',
+      email: 'priya@vertexretail.com',
+      phone: '+91 98220 11223',
+      billingAddress: 'Bandra Kurla Complex, Mumbai',
+      taxId: '27AABCV9900E1Z',
+      category: 'RETAIL',
+      notes: 'Omni-channel storefront expansion',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.clients.set(client2.id, client2);
+
+    const client3: ClientRecord = {
+      id: 'client_demo_003',
+      organizationId: demoOrg.id,
+      name: 'David Chen',
+      company: 'Zephyr AI Labs',
+      email: 'david@zephyrlabs.ai',
+      phone: '+1 415 555 0199',
+      billingAddress: 'Market St, San Francisco, CA',
+      taxId: 'US-94-3829102',
+      category: 'STARTUP',
+      notes: 'Silicon Valley AI research lab',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.clients.set(client3.id, client3);
+
+    // --- Demo Leads in all pipeline stages ---
+    const lead1: LeadRecord = {
+      id: 'lead_demo_001',
+      organizationId: demoOrg.id,
+      title: 'Full-Stack Platform Architecture & Design',
+      contactName: 'Arjun Mehta',
+      email: 'arjun@nexora.io',
+      phone: '+91 98765 43210',
+      companyName: 'Nexora Digital Studios',
+      source: 'Direct Inquiry',
+      status: LeadStatus.WON,
+      priority: Priority.HIGH,
+      estimatedBudget: 250000,
+      serviceRequired: 'Web Development & Engineering',
+      tags: ['Enterprise', 'Architecture'],
+      notes: 'Successfully won and converted to active project PRJ-001.',
+      createdAt: new Date(Date.now() - 25 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.leads.set(lead1.id, lead1);
+
+    const lead2: LeadRecord = {
+      id: 'lead_demo_002',
+      organizationId: demoOrg.id,
+      title: 'Shopify Plus Storefront & Inventory Sync',
+      contactName: 'Priya Sharma',
+      email: 'priya@vertexretail.com',
+      phone: '+91 98220 11223',
+      companyName: 'Vertex Retail Group',
+      source: 'Referral',
+      status: LeadStatus.PROPOSAL_SENT,
+      priority: Priority.HIGH,
+      estimatedBudget: 350000,
+      serviceRequired: 'E-Commerce Engineering',
+      tags: ['Shopify', 'Retail'],
+      notes: 'Proposal QTN-2026-002 submitted; pending board approval.',
+      createdAt: new Date(Date.now() - 10 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.leads.set(lead2.id, lead2);
+
+    const lead3: LeadRecord = {
+      id: 'lead_demo_003',
+      organizationId: demoOrg.id,
+      title: 'Brand Identity & 3D Motion Asset Suite',
+      contactName: 'David Chen',
+      email: 'david@zephyrlabs.ai',
+      companyName: 'Zephyr AI Labs',
+      source: 'Website Intake',
+      status: LeadStatus.QUALIFIED,
+      priority: Priority.MEDIUM,
+      estimatedBudget: 200000,
+      serviceRequired: 'Brand Identity & UI/UX',
+      tags: ['Branding', 'Design'],
+      notes: 'Initial scope call completed; drafting proposal.',
+      createdAt: new Date(Date.now() - 5 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.leads.set(lead3.id, lead3);
+
+    const lead4: LeadRecord = {
+      id: 'lead_demo_004',
+      organizationId: demoOrg.id,
+      title: 'Enterprise Headless CMS Migration',
+      contactName: 'Elena Rostova',
+      email: 'elena@horizonhealth.org',
+      companyName: 'Horizon Healthcare',
+      source: 'LinkedIn Campaign',
+      status: LeadStatus.NEGOTIATION,
+      priority: Priority.URGENT,
+      estimatedBudget: 500000,
+      serviceRequired: 'Cloud Architecture & IT',
+      tags: ['Healthcare', 'CMS'],
+      notes: 'Security and compliance review in progress.',
+      createdAt: new Date(Date.now() - 15 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.leads.set(lead4.id, lead4);
+
+    const lead5: LeadRecord = {
+      id: 'lead_demo_005',
+      organizationId: demoOrg.id,
+      title: 'Performance Marketing & SEO Acceleration',
+      contactName: 'Karan Singhal',
+      email: 'karan@starlightapp.io',
+      companyName: 'Starlight Interactive',
+      source: 'Inbound Web Portal',
+      status: LeadStatus.NEW,
+      priority: Priority.LOW,
+      estimatedBudget: 120000,
+      serviceRequired: 'Digital Marketing & Growth',
+      tags: ['Marketing', 'SEO'],
+      notes: 'Inquiry received via public intake portal.',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.leads.set(lead5.id, lead5);
+
+    // --- Demo Quotations ---
+    const quote1: QuotationRecord = {
+      id: 'quote_demo_001',
+      organizationId: demoOrg.id,
+      clientId: demoClient.id,
+      createdById: adminUser.id,
+      quoteNumber: 'QTN-2026-001',
+      status: QuotationStatus.ACCEPTED,
+      subtotal: 250000,
+      discountAmount: 0,
+      taxAmount: 45000,
+      totalAmount: 295000,
+      currency: 'INR',
+      validUntil: new Date(Date.now() + 30 * 86400000),
+      notes: 'Includes cloud hosting setup and 90-day post-launch warranty.',
+      paymentTerms: '50% upon contract signing, 50% upon milestone deliverables.',
+      createdAt: new Date(Date.now() - 25 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.quotations.set(quote1.id, quote1);
+
+    const quoteItem1: QuotationItemRecord = {
+      id: 'qitem_demo_001',
+      quotationId: quote1.id,
+      serviceName: 'Core Platform Architecture & Engineering',
+      description: 'Micro-modular TypeScript engine with PostgreSQL database and caching',
+      quantity: 1,
+      unitPrice: 150000,
+      totalPrice: 150000,
+    };
+    this.quotationItems.set(quoteItem1.id, quoteItem1);
+
+    const quoteItem2: QuotationItemRecord = {
+      id: 'qitem_demo_002',
+      quotationId: quote1.id,
+      serviceName: 'UI/UX Design & Responsive Frontend',
+      description: 'Full design tokens, dark navy branding, and client portal interface',
+      quantity: 1,
+      unitPrice: 100000,
+      totalPrice: 100000,
+    };
+    this.quotationItems.set(quoteItem2.id, quoteItem2);
+
+    // --- Additional Demo Projects ---
+    const proj2: ProjectRecord = {
+      id: 'proj_demo_002',
+      organizationId: demoOrg.id,
+      clientId: client2.id,
+      managerId: adminUser.id,
+      name: 'Shopify Plus Omni-Channel Storefront',
+      code: 'PRJ-002',
+      description: 'Custom headless theme, ERP integration, and multi-currency checkout.',
+      status: ProjectStatus.ACTIVE,
+      priority: Priority.HIGH,
+      budget: 350000,
+      startDate: new Date(Date.now() - 10 * 86400000),
+      deadline: new Date(Date.now() + 45 * 86400000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.projects.set(proj2.id, proj2);
+
+    // --- Demo Deliverables & Versions ---
+    const deliv1: DeliverableRecord = {
+      id: 'deliv_demo_001',
+      projectId: demoProj.id,
+      title: 'High-Fidelity UI/UX Design System',
+      description: 'Figma prototypes, mobile viewports, component kit, and brand style guide.',
+      currentStatus: DeliverableStatus.APPROVED,
+      currentVersion: 2,
+      createdAt: new Date(Date.now() - 15 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.deliverables.set(deliv1.id, deliv1);
+
+    const delivVer1: DeliverableVersionRecord = {
+      id: 'dver_demo_001',
+      deliverableId: deliv1.id,
+      versionNumber: 2,
+      fileName: 'setsuzoku_design_system_v2.0.fig',
+      storageKey: 'deliv/proj_001/setsuzoku_design_v2.fig',
+      fileSize: 24500000,
+      fileMimeType: 'application/octet-stream',
+      changelogNotes: 'Addressed client feedback on typography scale and dark navy palette.',
+      submittedAt: new Date(Date.now() - 5 * 86400000),
+    };
+    this.deliverableVersions.set(delivVer1.id, delivVer1);
+
+    const deliv2: DeliverableRecord = {
+      id: 'deliv_demo_002',
+      projectId: demoProj.id,
+      title: 'Production API & Multi-Tenant Architecture',
+      description: 'OpenAPI specs, RBAC security guards, and database schemas.',
+      currentStatus: DeliverableStatus.PENDING_CLIENT_APPROVAL,
+      currentVersion: 1,
+      createdAt: new Date(Date.now() - 3 * 86400000),
+      updatedAt: new Date(),
+    };
+    this.deliverables.set(deliv2.id, deliv2);
+
+    const delivVer2: DeliverableVersionRecord = {
+      id: 'dver_demo_002',
+      deliverableId: deliv2.id,
+      versionNumber: 1,
+      fileName: 'api_architecture_v1.0.pdf',
+      storageKey: 'deliv/proj_001/api_arch_v1.pdf',
+      fileSize: 4200000,
+      fileMimeType: 'application/pdf',
+      changelogNotes: 'Ready for client technical review.',
+      submittedAt: new Date(Date.now() - 2 * 86400000),
+    };
+    this.deliverableVersions.set(delivVer2.id, delivVer2);
+
+    // --- Additional Demo Invoices & Payments ---
+    const inv2: InvoiceRecord = {
+      id: 'inv_demo_002',
+      organizationId: demoOrg.id,
+      clientId: client2.id,
+      projectId: proj2.id,
+      invoiceNumber: 'INV-2026-0002',
+      status: InvoiceStatus.PARTIALLY_PAID,
+      subtotal: 175000,
+      discountAmount: 0,
+      taxAmount: 31500,
+      totalAmount: 206500,
+      amountPaid: 100000,
+      balanceDue: 106500,
+      currency: 'INR',
+      paymentTerms: '50% advance upon contract execution.',
+      issuedDate: new Date(Date.now() - 5 * 86400000),
+      dueDate: new Date(Date.now() + 10 * 86400000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.invoices.set(inv2.id, inv2);
+
+    const payment1: PaymentRecord = {
+      id: 'pay_demo_001',
+      organizationId: demoOrg.id,
+      invoiceId: inv2.id,
+      amount: 100000,
+      currency: 'INR',
+      method: PaymentMethod.BANK_TRANSFER,
+      status: PaymentStatus.VERIFIED,
+      isManual: true,
+      transactionRef: 'NEFT-HDFC-99182377',
+      receiptNumber: 'RCP-2026-081',
+      notes: 'Initial 50% mobilization advance received via wire transfer.',
+      recordedById: adminUser.id,
+      verifiedAt: new Date(),
+      createdAt: new Date(Date.now() - 3 * 86400000),
+    };
+    this.payments.set(payment1.id, payment1);
   }
 
   // --- Users ---
