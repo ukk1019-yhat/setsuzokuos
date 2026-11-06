@@ -1,0 +1,19 @@
+{
+  "name": "setsuzoku-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SETSUZOKU OS - From First Inquiry to Final Payment",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces build",
+    "test": "npm run --workspaces test",
+    "dev:api": "npm --workspace=apps/api run dev",
+    "dev:web": "npm --workspace=apps/web run dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

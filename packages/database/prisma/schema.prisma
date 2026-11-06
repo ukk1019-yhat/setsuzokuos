@@ -1,0 +1,734 @@
+// SETSUZOKU OS - Complete PostgreSQL Prisma Schema
+// Version: 1.0.0
+// Database: PostgreSQL 16+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 1. ENUMS
+// ==========================================
+
+enum MembershipRole {
+  SUPER_ADMIN
+  ORGANIZATION_OWNER
+  ADMIN
+  MANAGER
+  EMPLOYEE
+  FINANCE
+  CLIENT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum ProjectStatus {
+  DRAFT
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  BLOCKED
+}
+
+enum DeliverableStatus {
+  DRAFT
+  INTERNAL_REVIEW
+  PENDING_CLIENT_APPROVAL
+  APPROVED
+  REVISION_REQUESTED
+}
+
+enum ApprovalDecision {
+  PENDING
+  APPROVED
+  REVISION_REQUESTED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  RAZORPAY
+  BANK_TRANSFER
+  UPI
+  CASH
+  OTHER_MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  REFUNDED
+}
+
+// ==========================================
+// 2. CORE IDENTITY & MULTI-TENANCY
+// ==========================================
+
+model Organization {
+  id                  String               @id @default(uuid())
+  name                String
+  slug                String               @unique
+  logoUrl             String?
+  businessEmail       String?
+  phone               String?
+  addressLine1        String?
+  addressLine2        String?
+  city                String?
+  state               String?
+  country             String               @default("IN")
+  postalCode          String?
+  currency            String               @default("INR") // e.g., INR, USD, EUR, GBP
+  timezone            String               @default("Asia/Kolkata")
+  taxNumber           String?              // GSTIN, VAT, or Tax ID
+  description         String?              @db.Text
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Relationships
+  memberships         Membership[]
+  clients             Client[]
+  leads               Lead[]
+  quotations          Quotation[]
+  projects            Project[]
+  invoices            Invoice[]
+  payments            Payment[]
+  fileRecords         FileRecord[]
+  notifications       Notification[]
+  automationRules     AutomationRule[]
+  activityLogs        ActivityLog[]
+  auditLogs           AuditLog[]
+
+  @@index([slug])
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String
+  fullName            String
+  phone               String?
+  avatarUrl           String?
+  isEmailVerified     Boolean              @default(false)
+  verificationToken   String?
+  resetPasswordToken  String?
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Relationships
+  memberships         Membership[]
+  refreshTokens       RefreshToken[]
+  assignedLeads       Lead[]               @relation("LeadAssignee")
+  assignedTasks       Task[]               @relation("TaskAssignee")
+  taskComments        TaskComment[]
+  createdQuotations   Quotation[]          @relation("QuotationCreator")
+  managedProjects     Project[]            @relation("ProjectManager")
+  projectMemberships  ProjectMember[]
+  activityLogs        ActivityLog[]
+  auditLogs           AuditLog[]
+  approvals           Approval[]           @relation("UserApprovals")
+  notifications       Notification[]
+
+  @@index([email])
+}
+
+model Membership {
+  id             String         @id @default(uuid())
+  organizationId String
+  userId         String
+  role           MembershipRole @default(EMPLOYEE)
+  title          String?        // Job title e.g. "Senior Full-Stack Engineer"
+  isActive       Boolean        @default(true)
+  joinedAt       DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Foreign keys
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model RefreshToken {
+  id             String         @id @default(uuid())
+  userId         String
+  tokenHash      String         @unique
+  revoked        Boolean        @default(false)
+  expiresAt      DateTime
+  createdAt      DateTime       @default(now())
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+// ==========================================
+// 3. CRM: LEADS & CLIENTS
+// ==========================================
+
+model Lead {
+  id              String         @id @default(uuid())
+  organizationId  String
+  title           String         // Requirement headline e.g. "E-Commerce Redesign"
+  contactName     String
+  email           String
+  phone           String?
+  companyName     String?
+  source          String?        // Website, Referral, Cold Outreach, LinkedIn
+  status          LeadStatus     @default(NEW)
+  priority        Priority       @default(MEDIUM)
+  estimatedBudget Decimal?       @db.Decimal(12, 2)
+  expectedClose   DateTime?
+  serviceRequired String?        @db.Text
+  notes           String?        @db.Text
+  tags            String[]       @default([])
+  assignedToId    String?
+  convertedToClientId String?    @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignedTo      User?          @relation("LeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  convertedClient Client?        @relation("LeadConvertedClient", fields: [convertedToClientId], references: [id])
+  activities      LeadActivity[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([assignedToId])
+}
+
+model LeadActivity {
+  id             String         @id @default(uuid())
+  leadId         String
+  activityType   String         // NOTE, CALL, EMAIL, STATUS_CHANGE
+  description    String         @db.Text
+  createdAt      DateTime       @default(now())
+
+  lead           Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+model Client {
+  id             String         @id @default(uuid())
+  organizationId String
+  name           String         // Primary business or individual name
+  company        String?
+  email          String
+  phone          String?
+  billingAddress String?        @db.Text
+  taxId          String?        // GST, VAT, Tax ID
+  category       String?        // Retainer, Enterprise, One-off
+  notes          String?        @db.Text
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  convertedFromLead Lead?       @relation("LeadConvertedClient")
+  quotations     Quotation[]
+  projects       Project[]
+  invoices       Invoice[]
+  conversations  Conversation[]
+
+  @@index([organizationId])
+  @@index([organizationId, email])
+}
+
+model Conversation {
+  id             String         @id @default(uuid())
+  organizationId String
+  clientId       String
+  subject        String
+  channel        String         @default("EMAIL") // EMAIL, IN_APP, CALL_LOG
+  createdAt      DateTime       @default(now())
+
+  client         Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([clientId])
+}
+
+// ==========================================
+// 4. QUOTATIONS & PROPOSALS
+// ==========================================
+
+model Quotation {
+  id             String          @id @default(uuid())
+  organizationId String
+  clientId       String
+  createdById    String
+  quoteNumber    String          // e.g. "QUO-2026-001"
+  status         QuotationStatus @default(DRAFT)
+  subtotal       Decimal         @db.Decimal(12, 2)
+  discountAmount Decimal         @default(0.00) @db.Decimal(12, 2)
+  taxAmount      Decimal         @default(0.00) @db.Decimal(12, 2)
+  totalAmount    Decimal         @db.Decimal(12, 2)
+  currency       String          @default("INR")
+  validUntil     DateTime
+  paymentTerms   String?         @db.Text
+  notes          String?         @db.Text
+  convertedProjectId String?     @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client         Client          @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  createdBy      User            @relation("QuotationCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  convertedProject Project?      @relation("QuotationConvertedProject", fields: [convertedProjectId], references: [id])
+  items          QuotationItem[]
+
+  @@unique([organizationId, quoteNumber])
+  @@index([organizationId])
+  @@index([clientId])
+}
+
+model QuotationItem {
+  id             String         @id @default(uuid())
+  quotationId    String
+  serviceName    String
+  description    String?        @db.Text
+  quantity       Decimal        @default(1.00) @db.Decimal(8, 2)
+  unitPrice      Decimal        @db.Decimal(12, 2)
+  totalPrice     Decimal        @db.Decimal(12, 2)
+
+  quotation      Quotation      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+}
+
+// ==========================================
+// 5. PROJECTS, MILESTONES & TASKS
+// ==========================================
+
+model Project {
+  id             String         @id @default(uuid())
+  organizationId String
+  clientId       String
+  managerId      String?
+  name           String
+  code           String         // e.g. "PRJ-2026-001"
+  description    String?        @db.Text
+  status         ProjectStatus  @default(PLANNING)
+  priority       Priority       @default(MEDIUM)
+  budget         Decimal        @default(0.00) @db.Decimal(12, 2)
+  startDate      DateTime?
+  deadline       DateTime?
+  completedAt    DateTime?
+  relatedQuotationId String?    @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client         Client         @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  manager        User?          @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+  relatedQuotation Quotation?   @relation("QuotationConvertedProject")
+  members        ProjectMember[]
+  milestones     Milestone[]
+  tasks          Task[]
+  deliverables   Deliverable[]
+  fileRecords    FileRecord[]
+  invoices       Invoice[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([clientId])
+}
+
+model ProjectMember {
+  id             String         @id @default(uuid())
+  projectId      String
+  userId         String
+  roleInProject  String         @default("CONTRIBUTOR") // LEAD, CONTRIBUTOR, REVIEWER
+  assignedAt     DateTime       @default(now())
+
+  project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Milestone {
+  id             String         @id @default(uuid())
+  projectId      String
+  title          String
+  description    String?        @db.Text
+  dueDate        DateTime?
+  isCompleted    Boolean        @default(false)
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+
+  @@index([projectId])
+}
+
+model Task {
+  id             String         @id @default(uuid())
+  projectId      String
+  milestoneId    String?
+  assignedToId   String?
+  title          String
+  description    String?        @db.Text
+  status         TaskStatus     @default(TODO)
+  priority       Priority       @default(MEDIUM)
+  dueDate        DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone      Milestone?     @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  assignedTo     User?          @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  subtasks       Subtask[]
+  comments       TaskComment[]
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model Subtask {
+  id             String         @id @default(uuid())
+  taskId         String
+  title          String
+  isCompleted    Boolean        @default(false)
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+
+  task           Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model TaskComment {
+  id             String         @id @default(uuid())
+  taskId         String
+  userId         String
+  content        String         @db.Text
+  createdAt      DateTime       @default(now())
+
+  task           Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// ==========================================
+// 6. DELIVERABLES & APPROVALS
+// ==========================================
+
+model Deliverable {
+  id             String             @id @default(uuid())
+  projectId      String
+  title          String
+  description    String?            @db.Text
+  currentStatus  DeliverableStatus  @default(DRAFT)
+  currentVersion Int                @default(1)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  project        Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions       DeliverableVersion[]
+
+  @@index([projectId])
+}
+
+model DeliverableVersion {
+  id             String             @id @default(uuid())
+  deliverableId  String
+  versionNumber  Int
+  storageKey     String             // S3/Object Storage Key
+  fileName       String
+  fileSize       Int
+  fileMimeType   String
+  changelogNotes String?            @db.Text
+  submittedAt    DateTime           @default(now())
+
+  deliverable    Deliverable        @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  approvals      Approval[]
+
+  @@unique([deliverableId, versionNumber])
+  @@index([deliverableId])
+}
+
+model Approval {
+  id                   String             @id @default(uuid())
+  deliverableVersionId String
+  approverType         String             // CLIENT or MANAGER
+  approverUserId       String?
+  decision             ApprovalDecision   @default(PENDING)
+  comments             String?            @db.Text
+  ipAddress            String?
+  userAgent            String?
+  decidedAt            DateTime?
+  createdAt            DateTime           @default(now())
+
+  deliverableVersion   DeliverableVersion @relation(fields: [deliverableVersionId], references: [id], onDelete: Cascade)
+  approverUser         User?              @relation("UserApprovals", fields: [approverUserId], references: [id], onDelete: SetNull)
+
+  @@index([deliverableVersionId])
+}
+
+// ==========================================
+// 7. FILES & OBJECT STORAGE
+// ==========================================
+
+model FileRecord {
+  id             String         @id @default(uuid())
+  organizationId String
+  projectId      String?
+  category       String         @default("GENERAL") // BRIEF, DELIVERABLE, CONTRACT, ASSET
+  originalName   String
+  storageKey     String         @unique
+  mimeType       String
+  sizeBytes      Int
+  uploadedById   String?
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([projectId])
+}
+
+// ==========================================
+// 8. INVOICES & PAYMENTS
+// ==========================================
+
+model Invoice {
+  id             String         @id @default(uuid())
+  organizationId String
+  clientId       String
+  projectId      String?
+  invoiceNumber  String         // e.g. "INV-2026-001"
+  status         InvoiceStatus  @default(DRAFT)
+  subtotal       Decimal        @db.Decimal(12, 2)
+  discountAmount Decimal        @default(0.00) @db.Decimal(12, 2)
+  taxAmount      Decimal        @default(0.00) @db.Decimal(12, 2)
+  totalAmount    Decimal        @db.Decimal(12, 2)
+  amountPaid     Decimal        @default(0.00) @db.Decimal(12, 2)
+  balanceDue     Decimal        @db.Decimal(12, 2)
+  currency       String         @default("INR")
+  issuedDate     DateTime       @default(now())
+  dueDate        DateTime
+  notes          String?        @db.Text
+  paymentTerms   String?        @db.Text
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client         Client         @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  project        Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  items          InvoiceItem[]
+  payments       Payment[]
+
+  @@unique([organizationId, invoiceNumber])
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id             String         @id @default(uuid())
+  invoiceId      String
+  serviceName    String
+  description    String?        @db.Text
+  quantity       Decimal        @default(1.00) @db.Decimal(8, 2)
+  unitPrice      Decimal        @db.Decimal(12, 2)
+  totalPrice     Decimal        @db.Decimal(12, 2)
+
+  invoice        Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id             String         @id @default(uuid())
+  organizationId String
+  invoiceId      String
+  amount         Decimal        @db.Decimal(12, 2)
+  currency       String         @default("INR")
+  method         PaymentMethod  @default(RAZORPAY)
+  status         PaymentStatus  @default(PENDING)
+  isManual       Boolean        @default(false)
+  transactionRef String?        // Razorpay Payment ID or Bank UTR
+  gatewayOrderId String?        // Razorpay Order ID
+  receiptNumber  String?
+  notes          String?        @db.Text
+  verifiedAt     DateTime?
+  recordedById   String?
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoice        Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  webhookEvent   PaymentWebhookEvent?
+
+  @@index([organizationId])
+  @@index([invoiceId])
+  @@index([transactionRef])
+}
+
+model PaymentWebhookEvent {
+  id             String         @id @default(uuid())
+  paymentId      String?        @unique
+  gateway        String         @default("RAZORPAY")
+  eventId        String         @unique
+  eventType      String
+  payload        Json
+  signature      String
+  isVerified     Boolean        @default(false)
+  processedAt    DateTime       @default(now())
+
+  payment        Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+}
+
+// ==========================================
+// 9. AUTOMATION & NOTIFICATIONS
+// ==========================================
+
+model AutomationRule {
+  id             String         @id @default(uuid())
+  organizationId String
+  name           String
+  triggerEvent   String         // e.g. "LEAD_CREATED", "QUOTATION_ACCEPTED", "DELIVERABLE_SUBMITTED"
+  actionType     String         // e.g. "SEND_NOTIFICATION", "CREATE_PROJECT", "ASSIGN_LEAD"
+  actionPayload  Json?
+  isEnabled      Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  executions     AutomationExecution[]
+
+  @@index([organizationId])
+}
+
+model AutomationExecution {
+  id             String         @id @default(uuid())
+  ruleId         String
+  idempotencyKey String         @unique // Prevents duplicate execution
+  status         String         // SUCCESS, FAILED
+  resultSummary  String?        @db.Text
+  executedAt     DateTime       @default(now())
+
+  rule           AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([idempotencyKey])
+}
+
+model Notification {
+  id             String         @id @default(uuid())
+  organizationId String
+  userId         String
+  title          String
+  message        String         @db.Text
+  type           String         // LEAD, APPROVAL, TASK, INVOICE, PAYMENT
+  isRead         Boolean        @default(false)
+  linkUrl        String?
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId, isRead])
+}
+
+// ==========================================
+// 10. ACTIVITY LOG & AUDIT LOG
+// ==========================================
+
+model ActivityLog {
+  id             String         @id @default(uuid())
+  organizationId String
+  userId         String?
+  action         String         // e.g. "PROJECT_CREATED", "LEAD_STATUS_CHANGED"
+  entityType     String         // "Lead", "Project", "Invoice"
+  entityId       String
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([entityType, entityId])
+}
+
+model AuditLog {
+  id             String         @id @default(uuid())
+  organizationId String
+  userId         String?
+  action         String         // e.g. "UPDATE_MEMBER_ROLE", "DELETE_DELIVERABLE"
+  resource       String
+  resourceId     String
+  diff           Json?          // { before: {...}, after: {...} }
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+}
+
