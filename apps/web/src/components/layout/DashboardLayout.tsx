@@ -26,6 +26,30 @@ import {
 export const DashboardLayout: React.FC = () => {
   const { user, currentOrg, currentRole, organizations, switchOrganization, logout } = useAuth();
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState([
+    {
+      id: '1',
+      title: 'New Client Inquiry',
+      desc: 'Nexora Digital submitted project brief for Web Platform Architecture',
+      time: '10m ago',
+      unread: true,
+    },
+    {
+      id: '2',
+      title: 'Invoice Payment Recorded',
+      desc: 'Payment of ₹1,18,000 recorded for INV-2026-0001',
+      time: '1h ago',
+      unread: true,
+    },
+    {
+      id: '3',
+      title: 'Deliverable Approved',
+      desc: 'UI/UX Wireframes v1.2 accepted by client Arjun Mehta',
+      time: '3h ago',
+      unread: false,
+    },
+  ]);
   const navigate = useNavigate();
 
   const navItems = [
@@ -172,16 +196,57 @@ export const DashboardLayout: React.FC = () => {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 relative">
             {currentOrg && (
               <Badge variant="teal" size="md">
                 {currentOrg.currency} &bull; {currentOrg.country}
               </Badge>
             )}
-            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-md transition">
-              <Bell className="w-4 h-4" />
-              <span className="w-2 h-2 rounded-full bg-brand-teal absolute top-1.5 right-1.5" />
-            </button>
+
+            <div className="relative">
+              <button
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-md transition"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadNotifications.some((n) => n.unread) && (
+                  <span className="w-2 h-2 rounded-full bg-brand-teal absolute top-1.5 right-1.5" />
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 top-12 w-80 bg-white rounded-lg shadow-xl border border-brand-border py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+                    <span className="text-xs font-bold text-brand-navy">Notifications</span>
+                    <button
+                      onClick={() =>
+                        setUnreadNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
+                      }
+                      className="text-[10px] text-brand-teal hover:underline font-medium"
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+                  <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+                    {unreadNotifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`p-3 text-xs hover:bg-gray-50 transition ${
+                          n.unread ? 'bg-teal-50/30' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="font-semibold text-brand-navy">{n.title}</span>
+                          <span className="text-[10px] text-brand-muted">{n.time}</span>
+                        </div>
+                        <p className="text-[11px] text-brand-muted leading-relaxed">{n.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="h-5 w-px bg-gray-200" />
             <span className="text-xs text-brand-muted">
               Role: <strong className="text-brand-text font-semibold">{currentRole}</strong>

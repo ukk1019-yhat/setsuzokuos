@@ -744,8 +744,22 @@ export const LeadsPage: React.FC = () => {
 </form>`}
           </div>
 
-          <div className="p-3 bg-teal-50 border border-teal-200 rounded text-teal-800 text-[11px]">
-            <strong>Direct Webhook URL:</strong> <code className="bg-white px-1.5 py-0.5 rounded border">{`${window.location.origin}/api/v1/leads/intake`}</code>
+          <div className="p-3 bg-teal-50 border border-teal-200 rounded text-teal-800 text-[11px] space-y-2">
+            <div>
+              <strong>Public Intake Portal URL:</strong>{' '}
+              <a
+                href={`/intake/${currentOrg?.slug || 'setsuzoku-media-labs'}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand-teal font-semibold underline ml-1"
+              >
+                {`${window.location.origin}/intake/${currentOrg?.slug || 'setsuzoku-media-labs'}`}
+              </a>
+            </div>
+            <div>
+              <strong>Direct JSON/REST Endpoint:</strong>{' '}
+              <code className="bg-white px-1.5 py-0.5 rounded border">{`${window.location.origin}/api/v1/leads/intake`}</code>
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">

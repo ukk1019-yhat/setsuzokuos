@@ -7,6 +7,19 @@ import { requirePermission } from '../../middleware/rbac.guard';
 
 export const organizationRouter = Router();
 
+// Public organization details for intake / invoices
+organizationRouter.get('/public/:slug', async (req, res, next) => {
+  try {
+    const result = await organizationService.getBySlug(req.params.slug);
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Onboarding: create new organization
 organizationRouter.post('/', authGuard, async (req: AuthenticatedRequest, res: Response, next) => {
   try {

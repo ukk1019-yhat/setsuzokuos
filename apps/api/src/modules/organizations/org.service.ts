@@ -55,6 +55,25 @@ export class OrganizationService {
     };
   }
 
+  public async getBySlug(slug: string): Promise<Partial<OrganizationDto>> {
+    const org = await db.findOrgBySlug(slug);
+    if (!org) {
+      const err: any = new Error('Organization not found');
+      err.statusCode = 404;
+      err.code = 'ORG_NOT_FOUND';
+      throw err;
+    }
+    return {
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      logoUrl: org.logoUrl,
+      country: org.country,
+      currency: org.currency,
+      description: org.description,
+    };
+  }
+
   public async update(
     organizationId: string,
     userId: string,

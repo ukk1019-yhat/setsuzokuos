@@ -5,6 +5,7 @@ import { DashboardLayout } from './components/layout/DashboardLayout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { PublicLeadIntakePage } from './pages/PublicLeadIntakePage';
 import { DashboardOverviewPage } from './pages/DashboardOverviewPage';
 import { TeamPage } from './pages/TeamPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -58,6 +59,8 @@ export const App: React.FC = () => {
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/intake" element={<PublicLeadIntakePage />} />
+          <Route path="/intake/:orgSlug" element={<PublicLeadIntakePage />} />
 
           {/* Onboarding */}
           <Route
