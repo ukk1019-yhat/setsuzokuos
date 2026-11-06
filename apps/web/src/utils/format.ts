@@ -38,3 +38,4 @@ export function formatRelativeDays(dateStrOrObj: string | Date, isDueMetric = fa
   if (pastDays === 1) return 'Yesterday';
   return `${pastDays}d ago`;
 }
+

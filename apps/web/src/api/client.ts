@@ -53,7 +53,7 @@ export async function apiRequest<T = any>(
       const errorInfo = data?.error || {};
       const fallbackMsg =
         response.status === 500
-          ? 'API server error (500). Please ensure the API backend is running on port 4000.'
+          ? 'Server temporarily unavailable. Please try again shortly.'
           : `Request failed with status ${response.status}`;
 
       throw new ApiError(
@@ -67,7 +67,7 @@ export async function apiRequest<T = any>(
   } catch (err: any) {
     if (err instanceof ApiError) throw err;
     throw new ApiError(
-      err.message || 'Network connection failed. Verify API backend connectivity.',
+      err.message || 'Unable to connect to the server. Please check your connection and try again.',
       'NETWORK_ERROR'
     );
   }

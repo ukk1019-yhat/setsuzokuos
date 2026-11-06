@@ -30,8 +30,8 @@ export function createApp(): Application {
   app.use(express.json());
   app.use(cookieParser());
 
-  // Health check endpoints
-  app.get('/health', (req, res) => {
+  // Health check endpoints (supports all path variants)
+  app.get(['/health', '/api/health', '/api/v1/health', '/v1/health'], (req, res) => {
     res.status(200).json({
       status: 'UP',
       service: 'SETSUZOKU OS API',
@@ -40,29 +40,25 @@ export function createApp(): Application {
     });
   });
 
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({
-      status: 'UP',
-      service: 'SETSUZOKU OS API',
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-    });
-  });
+  // REST API v1 Routes (supports both /api/v1 and /v1 in case of rewrite stripping)
+  const mountRoutes = (prefix: string) => {
+    app.use(`${prefix}/auth`, authRouter);
+    app.use(`${prefix}/organizations`, organizationRouter);
+    app.use(`${prefix}/members`, membersRouter);
+    app.use(`${prefix}/leads`, leadsRouter);
+    app.use(`${prefix}/clients`, clientsRouter);
+    app.use(`${prefix}/quotations`, quotationsRouter);
+    app.use(`${prefix}/projects`, projectsRouter);
+    app.use(`${prefix}/tasks`, tasksRouter);
+    app.use(`${prefix}/deliverables`, deliverablesRouter);
+    app.use(`${prefix}/portal`, portalRouter);
+    app.use(`${prefix}/invoices`, invoicesRouter);
+    app.use(`${prefix}/payments`, paymentsRouter);
+    app.use(`${prefix}/reports`, reportsRouter);
+  };
 
-  // REST API v1 Routes
-  app.use('/api/v1/auth', authRouter);
-  app.use('/api/v1/organizations', organizationRouter);
-  app.use('/api/v1/members', membersRouter);
-  app.use('/api/v1/leads', leadsRouter);
-  app.use('/api/v1/clients', clientsRouter);
-  app.use('/api/v1/quotations', quotationsRouter);
-  app.use('/api/v1/projects', projectsRouter);
-  app.use('/api/v1/tasks', tasksRouter);
-  app.use('/api/v1/deliverables', deliverablesRouter);
-  app.use('/api/v1/portal', portalRouter);
-  app.use('/api/v1/invoices', invoicesRouter);
-  app.use('/api/v1/payments', paymentsRouter);
-  app.use('/api/v1/reports', reportsRouter);
+  mountRoutes('/api/v1');
+  mountRoutes('/v1');
 
   // 404 Handler
   app.use('*', (req, res) => {

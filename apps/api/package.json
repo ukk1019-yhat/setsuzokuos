@@ -1,11 +1,11 @@
 {
   "name": "@setsuzoku/api",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "pnpm --filter @setsuzoku/shared run build && tsc",
+    "start": "node index.js",
     "test": "vitest run"
   },
   "dependencies": {

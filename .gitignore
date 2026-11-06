@@ -10,3 +10,9 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Track precompiled shared and API packages for reliable Vercel serverless deployment
+!packages/shared/dist/
+!packages/shared/dist/**
+!apps/api/dist/
+!apps/api/dist/**
+
