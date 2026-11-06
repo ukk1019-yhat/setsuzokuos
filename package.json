@@ -10,6 +10,7 @@
   "scripts": {
     "build": "npm run --workspaces build",
     "test": "npm run --workspaces test",
+    "dev": "npm run --workspaces --parallel dev",
     "dev:api": "npm --workspace=apps/api run dev",
     "dev:web": "npm --workspace=apps/web run dev"
   },

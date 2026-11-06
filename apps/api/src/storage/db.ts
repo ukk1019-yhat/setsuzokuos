@@ -401,7 +401,130 @@ export class DatabaseRepository {
   }
 
   public seedDefaultData(): void {
-    // Seed system ready state if empty
+    const adminUser: UserRecord = {
+      id: 'user_admin_001',
+      email: 'admin@setsuzoku.io',
+      passwordHash: '$2a$10$qFB9SofDky4hVJ8m18HnTuq4yta1TB3LQQDDhHgvVlVIX4NTh08Ge', // Password123!
+      fullName: 'Setsuzoku Admin',
+      phone: '+91 99999 00000',
+      avatarUrl: null,
+      isEmailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(adminUser.id, adminUser);
+
+    const demoOrg: OrganizationRecord = {
+      id: 'org_demo_001',
+      name: 'Setsuzoku Media Labs',
+      slug: 'setsuzoku-media-labs',
+      logoUrl: null,
+      businessEmail: 'admin@setsuzoku.io',
+      phone: '+91 99999 00000',
+      addressLine1: '100 Silicon Boulevard',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      country: 'India',
+      currency: 'INR',
+      timezone: 'Asia/Kolkata',
+      taxNumber: '27AABCS1429B1Z',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.organizations.set(demoOrg.id, demoOrg);
+
+    const ownerMem: MembershipRecord = {
+      id: 'mem_admin_001',
+      organizationId: demoOrg.id,
+      userId: adminUser.id,
+      role: MembershipRole.ORGANIZATION_OWNER,
+      isActive: true,
+      title: 'Managing Director',
+      joinedAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.memberships.set(ownerMem.id, ownerMem);
+
+    const demoClient: ClientRecord = {
+      id: 'client_demo_001',
+      organizationId: demoOrg.id,
+      name: 'Arjun Mehta',
+      company: 'Nexora Digital Studios',
+      email: 'arjun@nexora.io',
+      phone: '+91 98765 43210',
+      billingAddress: '42 Cyber City, Gurgaon, India',
+      taxId: '06AABCN8877D1Z',
+      category: 'ENTERPRISE',
+      notes: 'Strategic agency retainer client',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.clients.set(demoClient.id, demoClient);
+
+    const demoProj: ProjectRecord = {
+      id: 'proj_demo_001',
+      organizationId: demoOrg.id,
+      clientId: demoClient.id,
+      managerId: adminUser.id,
+      name: 'Cloud Infrastructure & SaaS Launch',
+      code: 'PRJ-001',
+      description: 'End-to-end design, development, multi-tenant deployment and automated billing.',
+      status: ProjectStatus.ACTIVE,
+      priority: Priority.HIGH,
+      budget: 250000,
+      startDate: new Date(),
+      deadline: new Date(Date.now() + 30 * 86400000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.projects.set(demoProj.id, demoProj);
+
+    const demoTask: TaskRecord = {
+      id: 'task_demo_001',
+      projectId: demoProj.id,
+      assignedToId: adminUser.id,
+      title: 'API Architecture & Multi-Tenant Deployment',
+      description: 'Deliver production-grade REST APIs, RBAC guards, and Vercel services config.',
+      status: TaskStatus.IN_PROGRESS,
+      priority: Priority.HIGH,
+      dueDate: new Date(Date.now() + 7 * 86400000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.tasks.set(demoTask.id, demoTask);
+
+    const demoInv: InvoiceRecord = {
+      id: 'inv_demo_001',
+      organizationId: demoOrg.id,
+      clientId: demoClient.id,
+      projectId: demoProj.id,
+      invoiceNumber: 'INV-2026-0001',
+      status: InvoiceStatus.ISSUED,
+      subtotal: 100000,
+      discountAmount: 0,
+      taxAmount: 18000,
+      totalAmount: 118000,
+      amountPaid: 0,
+      balanceDue: 118000,
+      currency: 'INR',
+      paymentTerms: 'Payment due within 14 days of invoice date.',
+      issuedDate: new Date(),
+      dueDate: new Date(Date.now() + 14 * 86400000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.invoices.set(demoInv.id, demoInv);
+
+    const demoItem: InvoiceItemRecord = {
+      id: 'item_demo_001',
+      invoiceId: demoInv.id,
+      serviceName: 'Full-Stack SaaS Platform Architecture',
+      description: 'Complete multi-tenant core engine, RBAC, CRM, invoicing & payment processing.',
+      quantity: 1,
+      unitPrice: 100000,
+      totalPrice: 100000,
+    };
+    this.invoiceItems.set(demoItem.id, demoItem);
   }
 
   // --- Users ---

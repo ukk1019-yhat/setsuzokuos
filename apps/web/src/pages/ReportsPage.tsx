@@ -1,29 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { BusinessOverviewReportDto } from '@setsuzoku/shared';
+import { apiRequest } from '../api/client';
 
 export const ReportsPage: React.FC = () => {
   const { currentOrg } = useAuth();
   const [report, setReport] = useState<BusinessOverviewReportDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const token = localStorage.getItem('accessToken');
   const orgId = currentOrg?.id;
 
   const fetchReport = async () => {
     if (!orgId) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/v1/reports/overview', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-Organization-Id': orgId,
-        },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setReport(data.data);
-      }
+      const data = await apiRequest<BusinessOverviewReportDto>('/reports/overview');
+      setReport(data);
     } catch (err) {
       console.error('Failed to load reports:', err);
     } finally {

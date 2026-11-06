@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { InvoiceDto, ClientDto, InvoiceStatus, PaymentMethod } from '@setsuzoku/shared';
+import { apiRequest } from '../api/client';
 
 export const InvoicesPage: React.FC = () => {
   const { currentOrg } = useAuth();
@@ -38,33 +39,19 @@ export const InvoicesPage: React.FC = () => {
   const [receiptNumber, setReceiptNumber] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
 
-  const token = localStorage.getItem('accessToken');
   const orgId = currentOrg?.id;
 
   const fetchData = async () => {
     if (!orgId) return;
     setIsLoading(true);
     try {
-      const [invRes, clientRes] = await Promise.all([
-        fetch('/api/v1/invoices', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'X-Organization-Id': orgId,
-          },
-        }),
-        fetch('/api/v1/clients', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'X-Organization-Id': orgId,
-          },
-        }),
+      const [invData, clientData] = await Promise.all([
+        apiRequest<InvoiceDto[]>('/invoices'),
+        apiRequest<ClientDto[]>('/clients'),
       ]);
 
-      const invData = await invRes.json();
-      const clientData = await clientRes.json();
-
-      if (invData.success) setInvoices(invData.data);
-      if (clientData.success) setClients(clientData.data);
+      if (invData) setInvoices(invData);
+      if (clientData) setClients(clientData);
     } catch (err) {
       console.error('Failed to load invoices:', err);
     } finally {
@@ -138,13 +125,8 @@ export const InvoicesPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/v1/invoices', {
+      await apiRequest('/invoices', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          'X-Organization-Id': orgId!,
-        },
         body: JSON.stringify({
           clientId: newClientId,
           dueDate: new Date(newDueDate).toISOString(),
@@ -161,11 +143,6 @@ export const InvoicesPage: React.FC = () => {
           })),
         }),
       });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error?.message || 'Failed to create invoice');
-      }
 
       setShowCreateModal(false);
       // Reset form
@@ -201,13 +178,8 @@ export const InvoicesPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      const res = await fetch('/api/v1/payments/record', {
+      await apiRequest('/payments/record', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          'X-Organization-Id': orgId!,
-        },
         body: JSON.stringify({
           invoiceId: selectedInvoice.id,
           amount: Number(paymentAmount),
@@ -218,11 +190,6 @@ export const InvoicesPage: React.FC = () => {
           notes: paymentNotes || undefined,
         }),
       });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error?.message || 'Failed to record payment');
-      }
 
       setShowPaymentModal(false);
       setSelectedInvoice(null);
@@ -236,16 +203,8 @@ export const InvoicesPage: React.FC = () => {
 
   const openPreview = async (inv: InvoiceDto) => {
     try {
-      const res = await fetch(`/api/v1/invoices/${inv.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-Organization-Id': orgId!,
-        },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setPreviewInvoice(data.data);
-      }
+      const data = await apiRequest<InvoiceDto>(`/invoices/${inv.id}`);
+      setPreviewInvoice(data || inv);
     } catch (err) {
       setPreviewInvoice(inv);
     }

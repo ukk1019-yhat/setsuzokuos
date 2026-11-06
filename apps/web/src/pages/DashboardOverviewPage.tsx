@@ -16,29 +16,21 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BusinessOverviewReportDto } from '@setsuzoku/shared';
+import { apiRequest } from '../api/client';
 
 export const DashboardOverviewPage: React.FC = () => {
   const { currentOrg, currentRole } = useAuth();
   const [report, setReport] = useState<BusinessOverviewReportDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const token = localStorage.getItem('accessToken');
   const orgId = currentOrg?.id;
 
   useEffect(() => {
     if (!orgId) return;
     const fetchOverview = async () => {
       try {
-        const res = await fetch('/api/v1/reports/overview', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'X-Organization-Id': orgId,
-          },
-        });
-        const data = await res.json();
-        if (data.success) {
-          setReport(data.data);
-        }
+        const data = await apiRequest<BusinessOverviewReportDto>('/reports/overview');
+        setReport(data);
       } catch (err) {
         console.error('Failed to load dashboard metrics:', err);
       } finally {

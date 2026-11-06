@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { PaymentDto, PaymentMethod, PaymentStatus } from '@setsuzoku/shared';
+import { apiRequest } from '../api/client';
 
 export const PaymentsPage: React.FC = () => {
   const { currentOrg } = useAuth();
@@ -9,23 +10,14 @@ export const PaymentsPage: React.FC = () => {
   const [methodFilter, setMethodFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const token = localStorage.getItem('accessToken');
   const orgId = currentOrg?.id;
 
   const fetchPayments = async () => {
     if (!orgId) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/v1/payments', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-Organization-Id': orgId,
-        },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setPayments(data.data);
-      }
+      const data = await apiRequest<PaymentDto[]>('/payments');
+      setPayments(data || []);
     } catch (err) {
       console.error('Failed to load payments:', err);
     } finally {

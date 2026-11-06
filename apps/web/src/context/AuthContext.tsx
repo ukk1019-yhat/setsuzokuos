@@ -35,24 +35,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(data.user);
     setOrganizations(data.organizations);
     localStorage.setItem('setsuzoku_access_token', data.accessToken);
+    localStorage.setItem('accessToken', data.accessToken);
 
-    const savedOrgId = localStorage.getItem('setsuzoku_active_org_id') || data.activeOrganizationId;
+    const savedOrgId =
+      localStorage.getItem('setsuzoku_active_org_id') ||
+      localStorage.getItem('activeOrgId') ||
+      data.activeOrganizationId;
     const match = data.organizations.find((o) => o.organization.id === savedOrgId) || data.organizations[0];
 
     if (match) {
       setCurrentOrg(match.organization);
       setCurrentRole(match.role);
       localStorage.setItem('setsuzoku_active_org_id', match.organization.id);
+      localStorage.setItem('activeOrgId', match.organization.id);
     } else {
       setCurrentOrg(null);
       setCurrentRole(null);
       localStorage.removeItem('setsuzoku_active_org_id');
+      localStorage.removeItem('activeOrgId');
     }
   };
 
   const refreshUser = async () => {
     try {
-      const token = localStorage.getItem('setsuzoku_access_token');
+      const token =
+        localStorage.getItem('setsuzoku_access_token') || localStorage.getItem('accessToken');
       if (!token) {
         setIsLoading(false);
         return;
@@ -62,6 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (err) {
       console.error('Session restore failed:', err);
       localStorage.removeItem('setsuzoku_access_token');
+      localStorage.removeItem('accessToken');
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -95,7 +103,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     localStorage.removeItem('setsuzoku_access_token');
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('setsuzoku_active_org_id');
+    localStorage.removeItem('activeOrgId');
     setUser(null);
     setOrganizations([]);
     setCurrentOrg(null);
