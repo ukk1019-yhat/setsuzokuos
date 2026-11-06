@@ -8,11 +8,11 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run --workspaces build",
-    "test": "npm run --workspaces test",
-    "dev": "npm run --workspaces --parallel dev",
-    "dev:api": "npm --workspace=apps/api run dev",
-    "dev:web": "npm --workspace=apps/web run dev"
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "dev": "pnpm --filter @setsuzoku/api --filter @setsuzoku/web --parallel dev",
+    "dev:api": "pnpm --filter @setsuzoku/api run dev",
+    "dev:web": "pnpm --filter @setsuzoku/web run dev"
   },
   "devDependencies": {
     "typescript": "^5.4.5"
