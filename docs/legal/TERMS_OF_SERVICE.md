@@ -70,6 +70,7 @@ You may terminate your account at any time. Upon request, you are entitled to ex
 
 Setsuzoku Media Labs Private Limited  
 Email: **info@setsuzoku.in**  
-Website: **https://setsuzokuos.vercel.app**  
+Main Website: **https://setsuzoku.info**  
+Application Platform: **https://setsuzokuos.vercel.app**  
 Republic of India
 

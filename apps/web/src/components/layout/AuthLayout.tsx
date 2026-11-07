@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Logo } from '../common/Logo';
-import { Mail } from 'lucide-react';
+import { Mail, ExternalLink } from 'lucide-react';
 
 export const AuthLayout: React.FC<{ children: ReactNode; title?: string; subtitle?: string }> = ({
   children,
@@ -32,11 +32,23 @@ export const AuthLayout: React.FC<{ children: ReactNode; title?: string; subtitl
         </div>
       </div>
 
-      <div className="mt-8 text-center text-xs text-brand-muted space-y-1">
-        <div>
-          Direct Enterprise Desk:{' '}
-          <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-semibold hover:underline inline-flex items-center gap-1">
-            <Mail className="w-3 h-3" />
+      <div className="mt-8 text-center text-xs text-brand-muted space-y-2">
+        <div className="flex items-center justify-center gap-3 text-[12px]">
+          <a
+            href="https://setsuzoku.info"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-600 hover:text-brand-navy hover:underline inline-flex items-center gap-1 font-medium transition"
+          >
+            setsuzoku.info
+            <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+          </a>
+          <span className="text-slate-300">&bull;</span>
+          <a
+            href="mailto:info@setsuzoku.in"
+            className="text-slate-600 hover:text-brand-navy hover:underline inline-flex items-center gap-1 font-medium transition"
+          >
+            <Mail className="w-3 h-3 text-slate-400" />
             info@setsuzoku.in
           </a>
         </div>

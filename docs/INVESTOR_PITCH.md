@@ -2,7 +2,8 @@
 
 **Confidential & Proprietary**  
 **Company:** Setsuzoku Media Labs Private Limited  
-**Product:** Setsuzoku OS (`https://setsuzokuos.vercel.app`)  
+**Main Corporate Website:** https://setsuzoku.info  
+**Product Platform:** Setsuzoku OS (`https://setsuzokuos.vercel.app`)  
 **Sector:** Vertical B2B SaaS / Creative Agency & Media Operating System  
 **Geography:** India First (Global South Expansion: MENA & SEA)  
 **Document Classification:** Investor Brief (No Fluff / Direct Economics)  
@@ -194,5 +195,7 @@ We are raising a Seed / Pre-Series A round to execute on three focused milestone
 
 **Contact for Data Room & Live Demo:**  
 **Founder Desk:** info@setsuzoku.in  
-**Product:** https://setsuzokuos.vercel.app  
+**Main Corporate Website:** https://setsuzoku.info  
+**Live Platform:** https://setsuzokuos.vercel.app  
 **Headquarters:** Mumbai, Maharashtra, Republic of India
+

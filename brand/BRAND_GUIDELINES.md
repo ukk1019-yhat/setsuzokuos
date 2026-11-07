@@ -53,5 +53,6 @@ Any unauthorized use of the Setsuzoku brand marks, logos, or confusingly similar
 For official press kits, partner co-branding, or media inquiries:
 **Setsuzoku Media Labs Private Limited**  
 Email: **info@setsuzoku.in**  
-Website: **https://setsuzokuos.vercel.app**
+Main Website: **https://setsuzoku.info**  
+Platform: **https://setsuzokuos.vercel.app**
 

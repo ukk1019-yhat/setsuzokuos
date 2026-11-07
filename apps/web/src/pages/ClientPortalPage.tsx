@@ -19,6 +19,7 @@ import {
   ArrowRight,
   CreditCard,
   Mail,
+  ExternalLink,
 } from 'lucide-react';
 
 export const ClientPortalPage: React.FC = () => {
@@ -142,13 +143,25 @@ export const ClientPortalPage: React.FC = () => {
           <Badge variant="teal" size="md">
             Active Client Account
           </Badge>
-          <a
-            href="mailto:info@setsuzoku.in"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition border border-white/15"
-          >
-            <Mail className="w-3.5 h-3.5 text-brand-teal" />
-            <span>Contact Desk</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://setsuzoku.info"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition border border-white/15"
+              title="Visit main corporate website"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-brand-teal" />
+              <span>setsuzoku.info</span>
+            </a>
+            <a
+              href="mailto:info@setsuzoku.in"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition border border-white/15"
+            >
+              <Mail className="w-3.5 h-3.5 text-brand-teal" />
+              <span>Contact Desk</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -452,17 +465,28 @@ export const ClientPortalPage: React.FC = () => {
           <div>
             <h4 className="text-xs font-bold text-brand-navy">Need Custom Deliverables or Billing Help?</h4>
             <p className="text-[11px] text-brand-muted">
-              Direct access to our senior project directors: <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-semibold hover:underline">info@setsuzoku.in</a>
+              Direct access to our senior project directors: <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-semibold hover:underline">info@setsuzoku.in</a> &bull; Corporate website: <a href="https://setsuzoku.info" target="_blank" rel="noopener noreferrer" className="text-brand-teal font-semibold hover:underline">setsuzoku.info</a>
             </p>
           </div>
         </div>
-        <a
-          href="mailto:info@setsuzoku.in"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-brand-border rounded-lg text-xs font-semibold text-brand-navy transition"
-        >
-          <Mail className="w-3.5 h-3.5 text-brand-teal" />
-          <span>Email Support</span>
-        </a>
+        <div className="flex items-center gap-2">
+          <a
+            href="https://setsuzoku.info"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-brand-border rounded-lg text-xs font-semibold text-brand-navy transition"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+            <span>setsuzoku.info</span>
+          </a>
+          <a
+            href="mailto:info@setsuzoku.in"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-brand-border rounded-lg text-xs font-semibold text-brand-navy transition"
+          >
+            <Mail className="w-3.5 h-3.5 text-brand-teal" />
+            <span>Email Support</span>
+          </a>
+        </div>
       </div>
     </div>
   );

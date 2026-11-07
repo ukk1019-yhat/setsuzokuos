@@ -170,8 +170,20 @@ export const DashboardLayout: React.FC = () => {
           </button>
         </div>
 
-        {/* Support direct address & copyright */}
+        {/* Support direct address, website & copyright */}
         <div className="px-3 py-2 border-t border-brand-sidebar-border bg-[#0E1013] text-[10px] text-brand-sidebar-text space-y-1">
+          <div className="flex items-center justify-between text-[11px]">
+            <span>Website:</span>
+            <a
+              href="https://setsuzoku.info"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white font-mono text-[11px] transition inline-flex items-center gap-1"
+            >
+              setsuzoku.info
+              <ExternalLink className="w-2.5 h-2.5 opacity-60" strokeWidth={1.75} />
+            </a>
+          </div>
           <div className="flex items-center justify-between text-[11px]">
             <span>Support:</span>
             <a
@@ -212,10 +224,22 @@ export const DashboardLayout: React.FC = () => {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <a
+              href="https://setsuzoku.info"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[12px] text-brand-muted hover:text-brand-text font-medium flex items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-white hover:bg-gray-50 transition"
+              title="Visit main corporate website (setsuzoku.info)"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-brand-muted" strokeWidth={1.75} />
+              <span>setsuzoku.info</span>
+            </a>
+
             <a
               href="mailto:info@setsuzoku.in"
               className="text-[12px] text-brand-muted hover:text-brand-text font-medium flex items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-white hover:bg-gray-50 transition"
+              title="Contact enterprise support"
             >
               <Mail className="w-3.5 h-3.5 text-brand-muted" strokeWidth={1.75} />
               <span>info@setsuzoku.in</span>

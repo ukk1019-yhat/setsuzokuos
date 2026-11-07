@@ -1,5 +1,6 @@
 # SETSUZOKU OS (接続 OS)
 > **Tagline:** *From First Inquiry to Final Payment*  
+> **Corporate Website:** [https://setsuzoku.info](https://setsuzoku.info) &bull; **Live App:** [https://setsuzokuos.vercel.app](https://setsuzokuos.vercel.app)  
 > **Mission:** A unified multi-tenant operating system for small and medium-sized service businesses (agencies, creative studios, IT firms, and consultancies).
 
 ---
@@ -144,5 +145,10 @@ pnpm --filter @setsuzoku/web run dev
 
 Visit `http://localhost:3000` to access the application.
 
+---
 
-# setsuzokuos
+### Official Channels
+- **Main Website:** [https://setsuzoku.info](https://setsuzoku.info)
+- **Production Platform:** [https://setsuzokuos.vercel.app](https://setsuzokuos.vercel.app)
+- **Direct Desk:** [info@setsuzoku.in](mailto:info@setsuzoku.in)
+- **Legal Entity:** Setsuzoku Media Labs Private Limited (Republic of India)

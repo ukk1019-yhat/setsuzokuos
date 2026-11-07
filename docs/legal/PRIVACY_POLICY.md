@@ -80,5 +80,6 @@ For all privacy inquiries, consent withdrawals, or grievances:
 **Data Protection Officer / Grievance Redressal**  
 Setsuzoku Media Labs Private Limited  
 Email: **info@setsuzoku.in**  
+Main Website: **https://setsuzoku.info**  
 Response SLA: Within 72 business hours
 

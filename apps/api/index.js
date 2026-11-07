@@ -39318,6 +39318,8 @@ function createApp() {
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    "https://setsuzoku.info",
+    "https://www.setsuzoku.info",
     "https://setsuzokuos.vercel.app",
     ENV.CORS_ORIGIN
   ].filter(Boolean);
@@ -39325,7 +39327,7 @@ function createApp() {
     (0, import_cors.default)({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        if (allowedOrigins.includes(origin) || origin.endsWith(".setsuzoku.info") || origin.endsWith(".vercel.app")) {
           return callback(null, true);
         }
         return callback(new Error(`Origin ${origin} not allowed by CORS security policy`));
