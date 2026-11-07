@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Setsuzoku Media Labs. All rights reserved.
+ */
 import { createApp } from './app';
 import { ENV } from './config/env';
 

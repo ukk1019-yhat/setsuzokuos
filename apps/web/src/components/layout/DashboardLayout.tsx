@@ -170,15 +170,20 @@ export const DashboardLayout: React.FC = () => {
           </button>
         </div>
 
-        {/* Support direct address */}
-        <div className="px-3 py-1.5 border-t border-brand-sidebar-border bg-[#0E1013] flex items-center justify-between text-[11px] text-brand-sidebar-text">
-          <span>Support:</span>
-          <a
-            href="mailto:info@setsuzoku.in"
-            className="hover:text-white font-mono text-[11px] transition"
-          >
-            info@setsuzoku.in
-          </a>
+        {/* Support direct address & copyright */}
+        <div className="px-3 py-2 border-t border-brand-sidebar-border bg-[#0E1013] text-[10px] text-brand-sidebar-text space-y-1">
+          <div className="flex items-center justify-between text-[11px]">
+            <span>Support:</span>
+            <a
+              href="mailto:info@setsuzoku.in"
+              className="hover:text-white font-mono text-[11px] transition"
+            >
+              info@setsuzoku.in
+            </a>
+          </div>
+          <div className="text-[10px] text-slate-500 pt-0.5 truncate border-t border-white/5">
+            &copy; 2026 Setsuzoku Media Labs. All rights reserved.
+          </div>
         </div>
       </aside>
 

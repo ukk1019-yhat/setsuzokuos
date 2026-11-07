@@ -190,6 +190,58 @@ export const SettingsPage: React.FC = () => {
           </div>
         </Card>
 
+        {/* Legal, IP & Privacy Governance Card */}
+        <Card
+          title="Legal, IP & Data Governance"
+          subtitle="Customer content ownership, DPDP compliance, and copyright terms"
+        >
+          <div className="space-y-4 text-xs">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-brand-navy">Customer Content Ownership</span>
+                <span className="text-[10px] uppercase font-semibold tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                  100% Client Owned
+                </span>
+              </div>
+              <p className="text-brand-muted leading-relaxed">
+                You and your clients retain full ownership and intellectual property rights in all uploaded briefs, footage, project files, and deliverables. Setsuzoku OS claims zero title or ownership in user data.
+              </p>
+              <div className="pt-1 text-[11px] text-brand-text font-medium flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Customer content is strictly excluded from AI model training and marketing.</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="p-3 border border-brand-border rounded-lg bg-white space-y-1">
+                <span className="font-semibold text-brand-navy block">India DPDP Act (2023)</span>
+                <p className="text-[11px] text-brand-muted">
+                  Full compliance with personal data minimization, Data Subject Access Requests (DSAR export), and Right to Erasure under Section 12.
+                </p>
+              </div>
+
+              <div className="p-3 border border-brand-border rounded-lg bg-white space-y-1">
+                <span className="font-semibold text-brand-navy block">Copyright Takedown Process</span>
+                <p className="text-[11px] text-brand-muted">
+                  Notice-and-takedown procedure with 36-hour SLA. Designated agent: <strong className="text-brand-navy">info@setsuzoku.in</strong>
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 border border-brand-border rounded-lg bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="font-semibold text-brand-navy block">Third-Party Software Audit</span>
+                <span className="text-[11px] text-brand-muted">
+                  Verified 100% permissive commercial licenses (MIT, Apache-2.0, ISC, SIL OFL 1.1). Zero GPL/AGPL dependencies.
+                </span>
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 whitespace-nowrap">
+                &copy; 2026 Setsuzoku Media Labs
+              </span>
+            </div>
+          </div>
+        </Card>
+
         <div className="flex justify-end gap-3">
           <Button type="submit" variant="primary" isLoading={isLoading} className="gap-2">
             <Save className="w-4 h-4" />

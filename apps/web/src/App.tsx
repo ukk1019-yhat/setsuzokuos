@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Setsuzoku Media Labs. All rights reserved.
+ */
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';

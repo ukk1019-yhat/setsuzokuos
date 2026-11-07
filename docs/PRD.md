@@ -8,12 +8,12 @@
 
 ### 1.1 The Problem
 Small and medium-sized service businesses (digital agencies, creative studios, IT firms, video production houses, consultancies) suffer from fragmented tool sprawl. A typical agency uses 5–8 disparate tools:
-- Typeform/Google Forms for lead intake
-- Trello/Asana for task tracking
-- Google Drive/Dropbox for client deliverables and feedback
-- WhatsApp/Email for client communication and revisions
-- PandaDoc/Proposify for quotations
-- QuickBooks/Zoho/Stripe/Razorpay for billing and payments
+- Disconnected online forms for lead intake
+- Generic boards and standalone tools for task tracking
+- External cloud folders for client deliverables and feedback
+- Ad-hoc chat and email channels for client communication and revisions
+- Standalone proposal software for quotations
+- Disjointed accounting tools and portals for billing and payments
 
 **Consequences:**
 - Leads slip through cracks (average 27% lead decay rate).

@@ -41,7 +41,7 @@ export const AuthLayout: React.FC<{ children: ReactNode; title?: string; subtitl
           </a>
         </div>
         <div className="text-[11px] text-slate-400">
-          &copy; {new Date().getFullYear()} SETSUZOKU OS &bull; Unified Agency Operating System
+          &copy; 2026 Setsuzoku Media Labs. All rights reserved.
         </div>
       </div>
     </div>
