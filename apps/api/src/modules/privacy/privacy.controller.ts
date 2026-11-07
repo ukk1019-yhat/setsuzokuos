@@ -36,3 +36,4 @@ privacyRouter.post('/delete-request', authGuard, async (req: AuthenticatedReques
     next(err);
   }
 });
+
