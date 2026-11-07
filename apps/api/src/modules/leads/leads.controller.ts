@@ -10,11 +10,12 @@ import { leadsService } from './leads.service';
 import { authGuard, AuthenticatedRequest } from '../../middleware/auth.guard';
 import { tenantGuard } from '../../middleware/tenant.guard';
 import { requirePermission } from '../../middleware/rbac.guard';
+import { publicLeadIntakeRateLimiter } from '../../middleware/rate-limiter.middleware';
 
 export const leadsRouter = Router();
 
-// Public Lead Intake (embed form)
-leadsRouter.post('/intake', async (req, res, next) => {
+// Public Lead Intake (embed form) with anti-abuse rate limiter
+leadsRouter.post('/intake', publicLeadIntakeRateLimiter, async (req, res, next) => {
   try {
     const validated = PublicLeadIntakeSchema.parse(req.body);
     const result = await leadsService.publicIntake(validated);

@@ -11,7 +11,10 @@ import {
 export class InvoicesService {
   public async createInvoice(
     organizationId: string,
-    input: CreateInvoiceInput
+    input: CreateInvoiceInput,
+    userId?: string,
+    ipAddress?: string,
+    userAgent?: string
   ): Promise<InvoiceDto> {
     const client = await db.findClientById(input.clientId);
     if (!client || client.organizationId !== organizationId) {
@@ -44,6 +47,27 @@ export class InvoicesService {
       notes: input.notes,
       paymentTerms: input.paymentTerms,
       items: input.items,
+    });
+
+    // Financial append-only audit record
+    await db.logAudit({
+      organizationId,
+      userId,
+      action: 'INVOICE_CREATED',
+      resource: 'Invoice',
+      resourceId: invoice.id,
+      diff: {
+        before: null,
+        after: {
+          invoiceNumber: invoice.invoiceNumber,
+          totalAmount: invoice.totalAmount,
+          currency: invoice.currency,
+          clientId: invoice.clientId,
+          status: invoice.status,
+        },
+      },
+      ipAddress,
+      userAgent,
     });
 
     return this.enrichInvoice(organizationId, invoice, items);
@@ -103,7 +127,10 @@ export class InvoicesService {
   public async updateInvoice(
     organizationId: string,
     id: string,
-    input: UpdateInvoiceInput
+    input: UpdateInvoiceInput,
+    userId?: string,
+    ipAddress?: string,
+    userAgent?: string
   ): Promise<InvoiceDto> {
     const inv = await db.findInvoiceById(id);
     if (!inv || inv.organizationId !== organizationId) {
@@ -121,10 +148,31 @@ export class InvoicesService {
 
     const updated = await db.updateInvoice(id, updates);
     const items = await db.getInvoiceItems(updated.id);
+
+    await db.logAudit({
+      organizationId,
+      userId,
+      action: 'INVOICE_UPDATED',
+      resource: 'Invoice',
+      resourceId: id,
+      diff: {
+        before: { status: inv.status, notes: inv.notes, paymentTerms: inv.paymentTerms },
+        after: { status: updated.status, notes: updated.notes, paymentTerms: updated.paymentTerms },
+      },
+      ipAddress,
+      userAgent,
+    });
+
     return this.enrichInvoice(organizationId, updated, items);
   }
 
-  public async deleteInvoice(organizationId: string, id: string): Promise<void> {
+  public async deleteInvoice(
+    organizationId: string,
+    id: string,
+    userId?: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<void> {
     const inv = await db.findInvoiceById(id);
     if (!inv || inv.organizationId !== organizationId) {
       const err = new Error('Invoice not found');
@@ -141,6 +189,20 @@ export class InvoicesService {
     }
 
     await db.deleteInvoice(id);
+
+    await db.logAudit({
+      organizationId,
+      userId,
+      action: 'INVOICE_DELETED',
+      resource: 'Invoice',
+      resourceId: id,
+      diff: {
+        before: { invoiceNumber: inv.invoiceNumber, totalAmount: inv.totalAmount, status: inv.status },
+        after: null,
+      },
+      ipAddress,
+      userAgent,
+    });
   }
 
   private async enrichInvoice(

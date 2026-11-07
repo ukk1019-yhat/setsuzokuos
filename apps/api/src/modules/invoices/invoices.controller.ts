@@ -24,7 +24,13 @@ invoicesRouter.post(
       const validated = CreateInvoiceSchema.parse(req.body);
       const organizationId = (req as any).tenant?.organizationId || (req as any).organizationId;
 
-      const invoice = await invoicesService.createInvoice(organizationId, validated);
+      const invoice = await invoicesService.createInvoice(
+        organizationId,
+        validated,
+        (req as any).user?.id,
+        req.ip || (req.headers['x-forwarded-for'] as string),
+        req.headers['user-agent'] as string
+      );
       res.status(201).json({
         success: true,
         data: invoice,
@@ -92,7 +98,10 @@ invoicesRouter.patch(
       const invoice = await invoicesService.updateInvoice(
         organizationId,
         req.params.id,
-        validated
+        validated,
+        (req as any).user?.id,
+        req.ip || (req.headers['x-forwarded-for'] as string),
+        req.headers['user-agent'] as string
       );
 
       res.status(200).json({
@@ -113,7 +122,13 @@ invoicesRouter.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const organizationId = (req as any).tenant?.organizationId || (req as any).organizationId;
-      await invoicesService.deleteInvoice(organizationId, req.params.id);
+      await invoicesService.deleteInvoice(
+        organizationId,
+        req.params.id,
+        (req as any).user?.id,
+        req.ip || (req.headers['x-forwarded-for'] as string),
+        req.headers['user-agent'] as string
+      );
 
       res.status(200).json({
         success: true,

@@ -18,15 +18,21 @@ export function errorMiddleware(err: any, req: Request, res: Response, next: Nex
   }
 
   const statusCode = err.status || err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-
+  
+  // Log full stack trace internally to server logs
   console.error(`[API Error] ${req.method} ${req.url} - ${statusCode}:`, err);
+
+  // Requirement: Generic errors shown to users; details go to server logs only
+  const clientMessage =
+    statusCode >= 500
+      ? 'An unexpected error occurred. Please contact technical support if this persists.'
+      : err.message || 'Request failed';
 
   return res.status(statusCode).json({
     success: false,
     error: {
-      code: err.code || 'INTERNAL_ERROR',
-      message,
+      code: err.code || (statusCode >= 500 ? 'INTERNAL_SERVER_ERROR' : 'BAD_REQUEST'),
+      message: clientMessage,
     },
   });
 }

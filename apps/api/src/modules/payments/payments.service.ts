@@ -15,7 +15,9 @@ export class PaymentsService {
   public async recordManualPayment(
     organizationId: string,
     input: RecordPaymentInput,
-    recordedById?: string
+    recordedById?: string,
+    ipAddress?: string,
+    userAgent?: string
   ): Promise<PaymentDto> {
     const invoice = await db.findInvoiceById(input.invoiceId);
     if (!invoice || invoice.organizationId !== organizationId) {
@@ -39,6 +41,9 @@ export class PaymentsService {
       throw err;
     }
 
+    const previousPaid = invoice.amountPaid;
+    const previousBalance = invoice.balanceDue;
+
     const payment = await db.recordPayment({
       organizationId,
       invoiceId: input.invoiceId,
@@ -51,6 +56,26 @@ export class PaymentsService {
       receiptNumber: input.receiptNumber,
       notes: input.notes,
       recordedById,
+    });
+
+    // Append-only audit record for financial change
+    await db.logAudit({
+      organizationId,
+      userId: recordedById,
+      action: 'PAYMENT_RECORDED',
+      resource: 'Payment',
+      resourceId: payment.id,
+      diff: {
+        before: { amountPaid: previousPaid, balanceDue: previousBalance, status: invoice.status },
+        after: {
+          paymentAmount: payment.amount,
+          newAmountPaid: previousPaid + payment.amount,
+          method: payment.method,
+          transactionRef: payment.transactionRef,
+        },
+      },
+      ipAddress,
+      userAgent,
     });
 
     return {

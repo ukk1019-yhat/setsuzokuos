@@ -20882,7 +20882,7 @@ var require_application = __commonJS({
   "../../node_modules/.pnpm/express@4.22.3/node_modules/express/lib/application.js"(exports2, module2) {
     "use strict";
     var finalhandler = require_finalhandler();
-    var Router14 = require_router();
+    var Router15 = require_router();
     var methods = require_methods();
     var middleware = require_init();
     var query = require_query();
@@ -20947,7 +20947,7 @@ var require_application = __commonJS({
     };
     app2.lazyrouter = function lazyrouter() {
       if (!this._router) {
-        this._router = new Router14({
+        this._router = new Router15({
           caseSensitive: this.enabled("case sensitive routing"),
           strict: this.enabled("strict routing")
         });
@@ -22809,7 +22809,7 @@ var require_express = __commonJS({
     var mixin = require_merge_descriptors();
     var proto = require_application();
     var Route = require_route();
-    var Router14 = require_router();
+    var Router15 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -22832,7 +22832,7 @@ var require_express = __commonJS({
     exports2.request = req;
     exports2.response = res;
     exports2.Route = Route;
-    exports2.Router = Router14;
+    exports2.Router = Router15;
     exports2.json = bodyParser.json;
     exports2.query = require_query();
     exports2.raw = bodyParser.raw;
@@ -23265,6 +23265,364 @@ var require_cookie_parser = __commonJS({
       }
       return ret;
     }
+  }
+});
+
+// ../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/package.json
+var require_package = __commonJS({
+  "../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/package.json"(exports2, module2) {
+    module2.exports = {
+      name: "dotenv",
+      version: "16.6.1",
+      description: "Loads environment variables from .env file",
+      main: "lib/main.js",
+      types: "lib/main.d.ts",
+      exports: {
+        ".": {
+          types: "./lib/main.d.ts",
+          require: "./lib/main.js",
+          default: "./lib/main.js"
+        },
+        "./config": "./config.js",
+        "./config.js": "./config.js",
+        "./lib/env-options": "./lib/env-options.js",
+        "./lib/env-options.js": "./lib/env-options.js",
+        "./lib/cli-options": "./lib/cli-options.js",
+        "./lib/cli-options.js": "./lib/cli-options.js",
+        "./package.json": "./package.json"
+      },
+      scripts: {
+        "dts-check": "tsc --project tests/types/tsconfig.json",
+        lint: "standard",
+        pretest: "npm run lint && npm run dts-check",
+        test: "tap run --allow-empty-coverage --disable-coverage --timeout=60000",
+        "test:coverage": "tap run --show-full-coverage --timeout=60000 --coverage-report=text --coverage-report=lcov",
+        prerelease: "npm test",
+        release: "standard-version"
+      },
+      repository: {
+        type: "git",
+        url: "git://github.com/motdotla/dotenv.git"
+      },
+      homepage: "https://github.com/motdotla/dotenv#readme",
+      funding: "https://dotenvx.com",
+      keywords: [
+        "dotenv",
+        "env",
+        ".env",
+        "environment",
+        "variables",
+        "config",
+        "settings"
+      ],
+      readmeFilename: "README.md",
+      license: "BSD-2-Clause",
+      devDependencies: {
+        "@types/node": "^18.11.3",
+        decache: "^4.6.2",
+        sinon: "^14.0.1",
+        standard: "^17.0.0",
+        "standard-version": "^9.5.0",
+        tap: "^19.2.0",
+        typescript: "^4.8.4"
+      },
+      engines: {
+        node: ">=12"
+      },
+      browser: {
+        fs: false
+      }
+    };
+  }
+});
+
+// ../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/lib/main.js
+var require_main = __commonJS({
+  "../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/lib/main.js"(exports2, module2) {
+    var fs = require("fs");
+    var path = require("path");
+    var os = require("os");
+    var crypto3 = require("crypto");
+    var packageJson = require_package();
+    var version = packageJson.version;
+    var LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
+    function parse(src) {
+      const obj = {};
+      let lines = src.toString();
+      lines = lines.replace(/\r\n?/mg, "\n");
+      let match;
+      while ((match = LINE.exec(lines)) != null) {
+        const key = match[1];
+        let value = match[2] || "";
+        value = value.trim();
+        const maybeQuote = value[0];
+        value = value.replace(/^(['"`])([\s\S]*)\1$/mg, "$2");
+        if (maybeQuote === '"') {
+          value = value.replace(/\\n/g, "\n");
+          value = value.replace(/\\r/g, "\r");
+        }
+        obj[key] = value;
+      }
+      return obj;
+    }
+    function _parseVault(options) {
+      options = options || {};
+      const vaultPath = _vaultPath(options);
+      options.path = vaultPath;
+      const result = DotenvModule.configDotenv(options);
+      if (!result.parsed) {
+        const err = new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`);
+        err.code = "MISSING_DATA";
+        throw err;
+      }
+      const keys = _dotenvKey(options).split(",");
+      const length = keys.length;
+      let decrypted;
+      for (let i = 0; i < length; i++) {
+        try {
+          const key = keys[i].trim();
+          const attrs = _instructions(result, key);
+          decrypted = DotenvModule.decrypt(attrs.ciphertext, attrs.key);
+          break;
+        } catch (error) {
+          if (i + 1 >= length) {
+            throw error;
+          }
+        }
+      }
+      return DotenvModule.parse(decrypted);
+    }
+    function _warn(message) {
+      console.log(`[dotenv@${version}][WARN] ${message}`);
+    }
+    function _debug(message) {
+      console.log(`[dotenv@${version}][DEBUG] ${message}`);
+    }
+    function _log(message) {
+      console.log(`[dotenv@${version}] ${message}`);
+    }
+    function _dotenvKey(options) {
+      if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) {
+        return options.DOTENV_KEY;
+      }
+      if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
+        return process.env.DOTENV_KEY;
+      }
+      return "";
+    }
+    function _instructions(result, dotenvKey) {
+      let uri;
+      try {
+        uri = new URL(dotenvKey);
+      } catch (error) {
+        if (error.code === "ERR_INVALID_URL") {
+          const err = new Error("INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development");
+          err.code = "INVALID_DOTENV_KEY";
+          throw err;
+        }
+        throw error;
+      }
+      const key = uri.password;
+      if (!key) {
+        const err = new Error("INVALID_DOTENV_KEY: Missing key part");
+        err.code = "INVALID_DOTENV_KEY";
+        throw err;
+      }
+      const environment = uri.searchParams.get("environment");
+      if (!environment) {
+        const err = new Error("INVALID_DOTENV_KEY: Missing environment part");
+        err.code = "INVALID_DOTENV_KEY";
+        throw err;
+      }
+      const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`;
+      const ciphertext = result.parsed[environmentKey];
+      if (!ciphertext) {
+        const err = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`);
+        err.code = "NOT_FOUND_DOTENV_ENVIRONMENT";
+        throw err;
+      }
+      return { ciphertext, key };
+    }
+    function _vaultPath(options) {
+      let possibleVaultPath = null;
+      if (options && options.path && options.path.length > 0) {
+        if (Array.isArray(options.path)) {
+          for (const filepath of options.path) {
+            if (fs.existsSync(filepath)) {
+              possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
+            }
+          }
+        } else {
+          possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
+        }
+      } else {
+        possibleVaultPath = path.resolve(process.cwd(), ".env.vault");
+      }
+      if (fs.existsSync(possibleVaultPath)) {
+        return possibleVaultPath;
+      }
+      return null;
+    }
+    function _resolveHome(envPath) {
+      return envPath[0] === "~" ? path.join(os.homedir(), envPath.slice(1)) : envPath;
+    }
+    function _configVault(options) {
+      const debug = Boolean(options && options.debug);
+      const quiet = options && "quiet" in options ? options.quiet : true;
+      if (debug || !quiet) {
+        _log("Loading env from encrypted .env.vault");
+      }
+      const parsed = DotenvModule._parseVault(options);
+      let processEnv = process.env;
+      if (options && options.processEnv != null) {
+        processEnv = options.processEnv;
+      }
+      DotenvModule.populate(processEnv, parsed, options);
+      return { parsed };
+    }
+    function configDotenv(options) {
+      const dotenvPath = path.resolve(process.cwd(), ".env");
+      let encoding = "utf8";
+      const debug = Boolean(options && options.debug);
+      const quiet = options && "quiet" in options ? options.quiet : true;
+      if (options && options.encoding) {
+        encoding = options.encoding;
+      } else {
+        if (debug) {
+          _debug("No encoding is specified. UTF-8 is used by default");
+        }
+      }
+      let optionPaths = [dotenvPath];
+      if (options && options.path) {
+        if (!Array.isArray(options.path)) {
+          optionPaths = [_resolveHome(options.path)];
+        } else {
+          optionPaths = [];
+          for (const filepath of options.path) {
+            optionPaths.push(_resolveHome(filepath));
+          }
+        }
+      }
+      let lastError;
+      const parsedAll = {};
+      for (const path2 of optionPaths) {
+        try {
+          const parsed = DotenvModule.parse(fs.readFileSync(path2, { encoding }));
+          DotenvModule.populate(parsedAll, parsed, options);
+        } catch (e) {
+          if (debug) {
+            _debug(`Failed to load ${path2} ${e.message}`);
+          }
+          lastError = e;
+        }
+      }
+      let processEnv = process.env;
+      if (options && options.processEnv != null) {
+        processEnv = options.processEnv;
+      }
+      DotenvModule.populate(processEnv, parsedAll, options);
+      if (debug || !quiet) {
+        const keysCount = Object.keys(parsedAll).length;
+        const shortPaths = [];
+        for (const filePath of optionPaths) {
+          try {
+            const relative = path.relative(process.cwd(), filePath);
+            shortPaths.push(relative);
+          } catch (e) {
+            if (debug) {
+              _debug(`Failed to load ${filePath} ${e.message}`);
+            }
+            lastError = e;
+          }
+        }
+        _log(`injecting env (${keysCount}) from ${shortPaths.join(",")}`);
+      }
+      if (lastError) {
+        return { parsed: parsedAll, error: lastError };
+      } else {
+        return { parsed: parsedAll };
+      }
+    }
+    function config(options) {
+      if (_dotenvKey(options).length === 0) {
+        return DotenvModule.configDotenv(options);
+      }
+      const vaultPath = _vaultPath(options);
+      if (!vaultPath) {
+        _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`);
+        return DotenvModule.configDotenv(options);
+      }
+      return DotenvModule._configVault(options);
+    }
+    function decrypt(encrypted, keyStr) {
+      const key = Buffer.from(keyStr.slice(-64), "hex");
+      let ciphertext = Buffer.from(encrypted, "base64");
+      const nonce = ciphertext.subarray(0, 12);
+      const authTag = ciphertext.subarray(-16);
+      ciphertext = ciphertext.subarray(12, -16);
+      try {
+        const aesgcm = crypto3.createDecipheriv("aes-256-gcm", key, nonce);
+        aesgcm.setAuthTag(authTag);
+        return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
+      } catch (error) {
+        const isRange = error instanceof RangeError;
+        const invalidKeyLength = error.message === "Invalid key length";
+        const decryptionFailed = error.message === "Unsupported state or unable to authenticate data";
+        if (isRange || invalidKeyLength) {
+          const err = new Error("INVALID_DOTENV_KEY: It must be 64 characters long (or more)");
+          err.code = "INVALID_DOTENV_KEY";
+          throw err;
+        } else if (decryptionFailed) {
+          const err = new Error("DECRYPTION_FAILED: Please check your DOTENV_KEY");
+          err.code = "DECRYPTION_FAILED";
+          throw err;
+        } else {
+          throw error;
+        }
+      }
+    }
+    function populate(processEnv, parsed, options = {}) {
+      const debug = Boolean(options && options.debug);
+      const override = Boolean(options && options.override);
+      if (typeof parsed !== "object") {
+        const err = new Error("OBJECT_REQUIRED: Please check the processEnv argument being passed to populate");
+        err.code = "OBJECT_REQUIRED";
+        throw err;
+      }
+      for (const key of Object.keys(parsed)) {
+        if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
+          if (override === true) {
+            processEnv[key] = parsed[key];
+          }
+          if (debug) {
+            if (override === true) {
+              _debug(`"${key}" is already defined and WAS overwritten`);
+            } else {
+              _debug(`"${key}" is already defined and was NOT overwritten`);
+            }
+          }
+        } else {
+          processEnv[key] = parsed[key];
+        }
+      }
+    }
+    var DotenvModule = {
+      configDotenv,
+      _configVault,
+      _parseVault,
+      config,
+      decrypt,
+      parse,
+      populate
+    };
+    module2.exports.configDotenv = DotenvModule.configDotenv;
+    module2.exports._configVault = DotenvModule._configVault;
+    module2.exports._parseVault = DotenvModule._parseVault;
+    module2.exports.config = DotenvModule.config;
+    module2.exports.decrypt = DotenvModule.decrypt;
+    module2.exports.parse = DotenvModule.parse;
+    module2.exports.populate = DotenvModule.populate;
+    module2.exports = DotenvModule;
   }
 });
 
@@ -29054,364 +29412,6 @@ var require_jsonwebtoken = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/package.json
-var require_package = __commonJS({
-  "../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/package.json"(exports2, module2) {
-    module2.exports = {
-      name: "dotenv",
-      version: "16.6.1",
-      description: "Loads environment variables from .env file",
-      main: "lib/main.js",
-      types: "lib/main.d.ts",
-      exports: {
-        ".": {
-          types: "./lib/main.d.ts",
-          require: "./lib/main.js",
-          default: "./lib/main.js"
-        },
-        "./config": "./config.js",
-        "./config.js": "./config.js",
-        "./lib/env-options": "./lib/env-options.js",
-        "./lib/env-options.js": "./lib/env-options.js",
-        "./lib/cli-options": "./lib/cli-options.js",
-        "./lib/cli-options.js": "./lib/cli-options.js",
-        "./package.json": "./package.json"
-      },
-      scripts: {
-        "dts-check": "tsc --project tests/types/tsconfig.json",
-        lint: "standard",
-        pretest: "npm run lint && npm run dts-check",
-        test: "tap run --allow-empty-coverage --disable-coverage --timeout=60000",
-        "test:coverage": "tap run --show-full-coverage --timeout=60000 --coverage-report=text --coverage-report=lcov",
-        prerelease: "npm test",
-        release: "standard-version"
-      },
-      repository: {
-        type: "git",
-        url: "git://github.com/motdotla/dotenv.git"
-      },
-      homepage: "https://github.com/motdotla/dotenv#readme",
-      funding: "https://dotenvx.com",
-      keywords: [
-        "dotenv",
-        "env",
-        ".env",
-        "environment",
-        "variables",
-        "config",
-        "settings"
-      ],
-      readmeFilename: "README.md",
-      license: "BSD-2-Clause",
-      devDependencies: {
-        "@types/node": "^18.11.3",
-        decache: "^4.6.2",
-        sinon: "^14.0.1",
-        standard: "^17.0.0",
-        "standard-version": "^9.5.0",
-        tap: "^19.2.0",
-        typescript: "^4.8.4"
-      },
-      engines: {
-        node: ">=12"
-      },
-      browser: {
-        fs: false
-      }
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/lib/main.js
-var require_main = __commonJS({
-  "../../node_modules/.pnpm/dotenv@16.6.1/node_modules/dotenv/lib/main.js"(exports2, module2) {
-    var fs = require("fs");
-    var path = require("path");
-    var os = require("os");
-    var crypto3 = require("crypto");
-    var packageJson = require_package();
-    var version = packageJson.version;
-    var LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
-    function parse(src) {
-      const obj = {};
-      let lines = src.toString();
-      lines = lines.replace(/\r\n?/mg, "\n");
-      let match;
-      while ((match = LINE.exec(lines)) != null) {
-        const key = match[1];
-        let value = match[2] || "";
-        value = value.trim();
-        const maybeQuote = value[0];
-        value = value.replace(/^(['"`])([\s\S]*)\1$/mg, "$2");
-        if (maybeQuote === '"') {
-          value = value.replace(/\\n/g, "\n");
-          value = value.replace(/\\r/g, "\r");
-        }
-        obj[key] = value;
-      }
-      return obj;
-    }
-    function _parseVault(options) {
-      options = options || {};
-      const vaultPath = _vaultPath(options);
-      options.path = vaultPath;
-      const result = DotenvModule.configDotenv(options);
-      if (!result.parsed) {
-        const err = new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`);
-        err.code = "MISSING_DATA";
-        throw err;
-      }
-      const keys = _dotenvKey(options).split(",");
-      const length = keys.length;
-      let decrypted;
-      for (let i = 0; i < length; i++) {
-        try {
-          const key = keys[i].trim();
-          const attrs = _instructions(result, key);
-          decrypted = DotenvModule.decrypt(attrs.ciphertext, attrs.key);
-          break;
-        } catch (error) {
-          if (i + 1 >= length) {
-            throw error;
-          }
-        }
-      }
-      return DotenvModule.parse(decrypted);
-    }
-    function _warn(message) {
-      console.log(`[dotenv@${version}][WARN] ${message}`);
-    }
-    function _debug(message) {
-      console.log(`[dotenv@${version}][DEBUG] ${message}`);
-    }
-    function _log(message) {
-      console.log(`[dotenv@${version}] ${message}`);
-    }
-    function _dotenvKey(options) {
-      if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) {
-        return options.DOTENV_KEY;
-      }
-      if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
-        return process.env.DOTENV_KEY;
-      }
-      return "";
-    }
-    function _instructions(result, dotenvKey) {
-      let uri;
-      try {
-        uri = new URL(dotenvKey);
-      } catch (error) {
-        if (error.code === "ERR_INVALID_URL") {
-          const err = new Error("INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development");
-          err.code = "INVALID_DOTENV_KEY";
-          throw err;
-        }
-        throw error;
-      }
-      const key = uri.password;
-      if (!key) {
-        const err = new Error("INVALID_DOTENV_KEY: Missing key part");
-        err.code = "INVALID_DOTENV_KEY";
-        throw err;
-      }
-      const environment = uri.searchParams.get("environment");
-      if (!environment) {
-        const err = new Error("INVALID_DOTENV_KEY: Missing environment part");
-        err.code = "INVALID_DOTENV_KEY";
-        throw err;
-      }
-      const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`;
-      const ciphertext = result.parsed[environmentKey];
-      if (!ciphertext) {
-        const err = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`);
-        err.code = "NOT_FOUND_DOTENV_ENVIRONMENT";
-        throw err;
-      }
-      return { ciphertext, key };
-    }
-    function _vaultPath(options) {
-      let possibleVaultPath = null;
-      if (options && options.path && options.path.length > 0) {
-        if (Array.isArray(options.path)) {
-          for (const filepath of options.path) {
-            if (fs.existsSync(filepath)) {
-              possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
-            }
-          }
-        } else {
-          possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
-        }
-      } else {
-        possibleVaultPath = path.resolve(process.cwd(), ".env.vault");
-      }
-      if (fs.existsSync(possibleVaultPath)) {
-        return possibleVaultPath;
-      }
-      return null;
-    }
-    function _resolveHome(envPath) {
-      return envPath[0] === "~" ? path.join(os.homedir(), envPath.slice(1)) : envPath;
-    }
-    function _configVault(options) {
-      const debug = Boolean(options && options.debug);
-      const quiet = options && "quiet" in options ? options.quiet : true;
-      if (debug || !quiet) {
-        _log("Loading env from encrypted .env.vault");
-      }
-      const parsed = DotenvModule._parseVault(options);
-      let processEnv = process.env;
-      if (options && options.processEnv != null) {
-        processEnv = options.processEnv;
-      }
-      DotenvModule.populate(processEnv, parsed, options);
-      return { parsed };
-    }
-    function configDotenv(options) {
-      const dotenvPath = path.resolve(process.cwd(), ".env");
-      let encoding = "utf8";
-      const debug = Boolean(options && options.debug);
-      const quiet = options && "quiet" in options ? options.quiet : true;
-      if (options && options.encoding) {
-        encoding = options.encoding;
-      } else {
-        if (debug) {
-          _debug("No encoding is specified. UTF-8 is used by default");
-        }
-      }
-      let optionPaths = [dotenvPath];
-      if (options && options.path) {
-        if (!Array.isArray(options.path)) {
-          optionPaths = [_resolveHome(options.path)];
-        } else {
-          optionPaths = [];
-          for (const filepath of options.path) {
-            optionPaths.push(_resolveHome(filepath));
-          }
-        }
-      }
-      let lastError;
-      const parsedAll = {};
-      for (const path2 of optionPaths) {
-        try {
-          const parsed = DotenvModule.parse(fs.readFileSync(path2, { encoding }));
-          DotenvModule.populate(parsedAll, parsed, options);
-        } catch (e) {
-          if (debug) {
-            _debug(`Failed to load ${path2} ${e.message}`);
-          }
-          lastError = e;
-        }
-      }
-      let processEnv = process.env;
-      if (options && options.processEnv != null) {
-        processEnv = options.processEnv;
-      }
-      DotenvModule.populate(processEnv, parsedAll, options);
-      if (debug || !quiet) {
-        const keysCount = Object.keys(parsedAll).length;
-        const shortPaths = [];
-        for (const filePath of optionPaths) {
-          try {
-            const relative = path.relative(process.cwd(), filePath);
-            shortPaths.push(relative);
-          } catch (e) {
-            if (debug) {
-              _debug(`Failed to load ${filePath} ${e.message}`);
-            }
-            lastError = e;
-          }
-        }
-        _log(`injecting env (${keysCount}) from ${shortPaths.join(",")}`);
-      }
-      if (lastError) {
-        return { parsed: parsedAll, error: lastError };
-      } else {
-        return { parsed: parsedAll };
-      }
-    }
-    function config(options) {
-      if (_dotenvKey(options).length === 0) {
-        return DotenvModule.configDotenv(options);
-      }
-      const vaultPath = _vaultPath(options);
-      if (!vaultPath) {
-        _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`);
-        return DotenvModule.configDotenv(options);
-      }
-      return DotenvModule._configVault(options);
-    }
-    function decrypt(encrypted, keyStr) {
-      const key = Buffer.from(keyStr.slice(-64), "hex");
-      let ciphertext = Buffer.from(encrypted, "base64");
-      const nonce = ciphertext.subarray(0, 12);
-      const authTag = ciphertext.subarray(-16);
-      ciphertext = ciphertext.subarray(12, -16);
-      try {
-        const aesgcm = crypto3.createDecipheriv("aes-256-gcm", key, nonce);
-        aesgcm.setAuthTag(authTag);
-        return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
-      } catch (error) {
-        const isRange = error instanceof RangeError;
-        const invalidKeyLength = error.message === "Invalid key length";
-        const decryptionFailed = error.message === "Unsupported state or unable to authenticate data";
-        if (isRange || invalidKeyLength) {
-          const err = new Error("INVALID_DOTENV_KEY: It must be 64 characters long (or more)");
-          err.code = "INVALID_DOTENV_KEY";
-          throw err;
-        } else if (decryptionFailed) {
-          const err = new Error("DECRYPTION_FAILED: Please check your DOTENV_KEY");
-          err.code = "DECRYPTION_FAILED";
-          throw err;
-        } else {
-          throw error;
-        }
-      }
-    }
-    function populate(processEnv, parsed, options = {}) {
-      const debug = Boolean(options && options.debug);
-      const override = Boolean(options && options.override);
-      if (typeof parsed !== "object") {
-        const err = new Error("OBJECT_REQUIRED: Please check the processEnv argument being passed to populate");
-        err.code = "OBJECT_REQUIRED";
-        throw err;
-      }
-      for (const key of Object.keys(parsed)) {
-        if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
-          if (override === true) {
-            processEnv[key] = parsed[key];
-          }
-          if (debug) {
-            if (override === true) {
-              _debug(`"${key}" is already defined and WAS overwritten`);
-            } else {
-              _debug(`"${key}" is already defined and was NOT overwritten`);
-            }
-          }
-        } else {
-          processEnv[key] = parsed[key];
-        }
-      }
-    }
-    var DotenvModule = {
-      configDotenv,
-      _configVault,
-      _parseVault,
-      config,
-      decrypt,
-      parse,
-      populate
-    };
-    module2.exports.configDotenv = DotenvModule.configDotenv;
-    module2.exports._configVault = DotenvModule._configVault;
-    module2.exports._parseVault = DotenvModule._parseVault;
-    module2.exports.config = DotenvModule.config;
-    module2.exports.decrypt = DotenvModule.decrypt;
-    module2.exports.parse = DotenvModule.parse;
-    module2.exports.populate = DotenvModule.populate;
-    module2.exports = DotenvModule;
-  }
-});
-
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
@@ -29421,7 +29421,7 @@ __export(src_exports, {
 module.exports = __toCommonJS(src_exports);
 
 // src/app.ts
-var import_express14 = __toESM(require_express2());
+var import_express15 = __toESM(require_express2());
 var import_cors = __toESM(require_lib3());
 
 // ../../node_modules/.pnpm/helmet@7.2.0/node_modules/helmet/index.mjs
@@ -29974,6 +29974,20 @@ var helmet = Object.assign(
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser());
+
+// src/config/env.ts
+var import_dotenv = __toESM(require_main());
+import_dotenv.default.config();
+var ENV = {
+  PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 4e3,
+  NODE_ENV: process.env.NODE_ENV || "development",
+  DATABASE_URL: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/setsuzoku_os?schema=public",
+  JWT_SECRET: process.env.JWT_SECRET || "setsuzoku-os-super-secret-jwt-key-2026",
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "setsuzoku-os-super-secret-refresh-key-2026",
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "15m",
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+  CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:3000"
+};
 
 // src/modules/auth/auth.controller.ts
 var import_express = __toESM(require_express2());
@@ -34404,20 +34418,6 @@ var CreateFileSchema = external_exports.object({
 var import_bcryptjs = __toESM(require_bcryptjs());
 var import_jsonwebtoken = __toESM(require_jsonwebtoken());
 
-// src/config/env.ts
-var import_dotenv = __toESM(require_main());
-import_dotenv.default.config();
-var ENV = {
-  PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 4e3,
-  NODE_ENV: process.env.NODE_ENV || "development",
-  DATABASE_URL: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/setsuzoku_os?schema=public",
-  JWT_SECRET: process.env.JWT_SECRET || "setsuzoku-os-super-secret-jwt-key-2026",
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "setsuzoku-os-super-secret-refresh-key-2026",
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "15m",
-  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
-  CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:3000"
-};
-
 // src/storage/db.ts
 var import_crypto = __toESM(require("crypto"));
 var DatabaseRepository = class {
@@ -35893,6 +35893,122 @@ var DatabaseRepository = class {
 };
 var db = new DatabaseRepository();
 
+// src/middleware/rate-limiter.middleware.ts
+var SecurityRateLimiter = class {
+  ipLimits = /* @__PURE__ */ new Map();
+  authFailures = /* @__PURE__ */ new Map();
+  constructor() {
+    setInterval(() => this.cleanup(), 5 * 60 * 1e3).unref();
+  }
+  cleanup() {
+    const now = Date.now();
+    for (const [key, item] of this.ipLimits.entries()) {
+      if (now > item.resetAt) this.ipLimits.delete(key);
+    }
+    for (const [key, item] of this.authFailures.entries()) {
+      if (now > item.lockedUntil && item.failedAttempts === 0) {
+        this.authFailures.delete(key);
+      }
+    }
+  }
+  /**
+   * Generic sliding-window rate limiter
+   */
+  limit(options) {
+    return (req, res, next) => {
+      const key = options.keyGenerator ? options.keyGenerator(req) : req.ip || req.socket.remoteAddress || "unknown";
+      const now = Date.now();
+      let record = this.ipLimits.get(key);
+      if (!record || now > record.resetAt) {
+        record = {
+          count: 1,
+          resetAt: now + options.windowMs
+        };
+        this.ipLimits.set(key, record);
+      } else {
+        record.count++;
+      }
+      const remaining = Math.max(0, options.max - record.count);
+      res.setHeader("X-RateLimit-Limit", options.max);
+      res.setHeader("X-RateLimit-Remaining", remaining);
+      res.setHeader("X-RateLimit-Reset", Math.ceil(record.resetAt / 1e3));
+      if (record.count > options.max) {
+        res.setHeader("Retry-After", Math.ceil((record.resetAt - now) / 1e3));
+        return res.status(429).json({
+          success: false,
+          error: {
+            code: "RATE_LIMIT_EXCEEDED",
+            message: options.message || "Too many requests, please try again later."
+          }
+        });
+      }
+      next();
+    };
+  }
+  /**
+   * Check if account/IP is locked out due to repeated failed logins
+   */
+  checkLockout(identifier) {
+    const record = this.authFailures.get(identifier);
+    if (!record) return { isLocked: false, remainingSec: 0 };
+    const now = Date.now();
+    if (now < record.lockedUntil) {
+      return {
+        isLocked: true,
+        remainingSec: Math.ceil((record.lockedUntil - now) / 1e3)
+      };
+    }
+    if (record.failedAttempts >= 5 && now >= record.lockedUntil) {
+      this.authFailures.delete(identifier);
+    }
+    return { isLocked: false, remainingSec: 0 };
+  }
+  /**
+   * Record a failed authentication attempt (locks after 5 failures for 15 minutes)
+   */
+  recordAuthFailure(identifier) {
+    const now = Date.now();
+    let record = this.authFailures.get(identifier);
+    if (!record || now > record.lockedUntil && record.lockedUntil > 0) {
+      record = {
+        failedAttempts: 1,
+        lockedUntil: 0
+      };
+      this.authFailures.set(identifier, record);
+    } else {
+      record.failedAttempts++;
+    }
+    const MAX_FAILURES = 5;
+    const LOCKOUT_DURATION_MS = 15 * 60 * 1e3;
+    if (record.failedAttempts >= MAX_FAILURES) {
+      record.lockedUntil = now + LOCKOUT_DURATION_MS;
+      return { locked: true, attemptsLeft: 0 };
+    }
+    return { locked: false, attemptsLeft: MAX_FAILURES - record.failedAttempts };
+  }
+  /**
+   * Clear failed attempts upon successful login
+   */
+  recordAuthSuccess(identifier) {
+    this.authFailures.delete(identifier);
+  }
+  resetAll() {
+    this.ipLimits.clear();
+    this.authFailures.clear();
+  }
+};
+var securityRateLimiter = new SecurityRateLimiter();
+var loginRateLimiter = securityRateLimiter.limit({
+  windowMs: 15 * 60 * 1e3,
+  max: 50,
+  message: "Too many login attempts from this IP, please try again after 15 minutes."
+});
+var publicLeadIntakeRateLimiter = securityRateLimiter.limit({
+  windowMs: 60 * 60 * 1e3,
+  max: 20,
+  message: "Rate limit reached for public inquiries. Please try again later or contact info@setsuzoku.in."
+});
+
 // src/modules/auth/auth.service.ts
 var AuthService = class {
   generateTokens(userId) {
@@ -35967,8 +36083,19 @@ var AuthService = class {
     };
   }
   async login(input) {
-    const user = await db.findUserByEmail(input.email);
+    const normalizedEmail = input.email.trim().toLowerCase();
+    const lockout = securityRateLimiter.checkLockout(normalizedEmail);
+    if (lockout.isLocked) {
+      const err = new Error(
+        `Account is temporarily locked due to repeated failed login attempts. Please try again after ${Math.ceil(lockout.remainingSec / 60)} minutes.`
+      );
+      err.statusCode = 429;
+      err.code = "ACCOUNT_LOCKED";
+      throw err;
+    }
+    const user = await db.findUserByEmail(normalizedEmail);
     if (!user) {
+      securityRateLimiter.recordAuthFailure(normalizedEmail);
       const err = new Error("Invalid email or password");
       err.statusCode = 401;
       err.code = "INVALID_CREDENTIALS";
@@ -35976,11 +36103,19 @@ var AuthService = class {
     }
     const isValid2 = await import_bcryptjs.default.compare(input.password, user.passwordHash);
     if (!isValid2) {
+      const failure = securityRateLimiter.recordAuthFailure(normalizedEmail);
+      if (failure.locked) {
+        const err2 = new Error("Account has been locked due to 5 consecutive failed login attempts. Please try again after 15 minutes.");
+        err2.statusCode = 429;
+        err2.code = "ACCOUNT_LOCKED";
+        throw err2;
+      }
       const err = new Error("Invalid email or password");
       err.statusCode = 401;
       err.code = "INVALID_CREDENTIALS";
       throw err;
     }
+    securityRateLimiter.recordAuthSuccess(normalizedEmail);
     const { accessToken } = this.generateTokens(user.id);
     const memberships = await db.getUserMemberships(user.id);
     return {
@@ -36025,58 +36160,45 @@ var authService = new AuthService();
 // src/middleware/auth.guard.ts
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken());
 function authGuard(req, res, next) {
+  let token;
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return db.findUserById("user_admin_001").then((user) => {
-      if (user) {
-        req.user = user;
-        return next();
-      }
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication token is missing or malformed"
-        }
-      });
-    }).catch(next);
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7);
+  } else if (req.cookies && req.cookies.setsuzoku_access_token) {
+    token = req.cookies.setsuzoku_access_token;
   }
-  const token = authHeader.substring(7);
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication token is missing. Please sign in."
+      }
+    });
+  }
   try {
     const payload = import_jsonwebtoken2.default.verify(token, ENV.JWT_SECRET);
     db.findUserById(payload.userId).then((user) => {
       if (!user) {
-        return db.findUserById("user_admin_001").then((admin) => {
-          if (admin) {
-            req.user = admin;
-            return next();
+        return res.status(401).json({
+          success: false,
+          error: {
+            code: "USER_NOT_FOUND",
+            message: "User belonging to this token no longer exists."
           }
-          return res.status(401).json({
-            success: false,
-            error: {
-              code: "USER_NOT_FOUND",
-              message: "User belonging to this token no longer exists"
-            }
-          });
         });
       }
       req.user = user;
       next();
     }).catch(next);
   } catch (err) {
-    return db.findUserById("user_admin_001").then((user) => {
-      if (user) {
-        req.user = user;
-        return next();
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "INVALID_TOKEN",
+        message: "Invalid or expired access token."
       }
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: "INVALID_TOKEN",
-          message: "Invalid or expired access token"
-        }
-      });
-    }).catch(next);
+    });
   }
 }
 
@@ -36086,6 +36208,13 @@ authRouter.post("/register", async (req, res, next) => {
   try {
     const validated = RegisterSchema.parse(req.body);
     const result = await authService.register(validated);
+    res.cookie("setsuzoku_access_token", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1e3
+      // 15 mins
+    });
     return res.status(201).json({
       success: true,
       data: result,
@@ -36095,10 +36224,17 @@ authRouter.post("/register", async (req, res, next) => {
     next(err);
   }
 });
-authRouter.post("/login", async (req, res, next) => {
+authRouter.post("/login", loginRateLimiter, async (req, res, next) => {
   try {
     const validated = LoginSchema.parse(req.body);
     const result = await authService.login(validated);
+    res.cookie("setsuzoku_access_token", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1e3
+      // 15 mins
+    });
     return res.status(200).json({
       success: true,
       data: result,
@@ -36791,7 +36927,7 @@ var leadsService = new LeadsService();
 
 // src/modules/leads/leads.controller.ts
 var leadsRouter = (0, import_express4.Router)();
-leadsRouter.post("/intake", async (req, res, next) => {
+leadsRouter.post("/intake", publicLeadIntakeRateLimiter, async (req, res, next) => {
   try {
     const validated = PublicLeadIntakeSchema.parse(req.body);
     const result = await leadsService.publicIntake(validated);
@@ -37963,6 +38099,21 @@ tasksRouter.post(
 var import_express9 = __toESM(require_express2());
 
 // src/modules/deliverables/deliverables.service.ts
+var ALLOWED_MEDIA_MIME_TYPES = /* @__PURE__ */ new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/quicktime",
+  "video/x-msvideo",
+  "application/pdf",
+  "application/zip",
+  "audio/mpeg",
+  "audio/wav",
+  "audio/aac"
+]);
+var MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024;
 var DeliverablesService = class {
   async createDeliverable(organizationId, input, userId) {
     const proj = await db.findProjectById(input.projectId);
@@ -38012,12 +38163,30 @@ var DeliverablesService = class {
       err.code = "DELIVERABLE_NOT_FOUND";
       throw err;
     }
+    if (!ALLOWED_MEDIA_MIME_TYPES.has(input.fileMimeType.toLowerCase())) {
+      const err = new Error(
+        `Disallowed file type: ${input.fileMimeType}. Only verified image, video, audio, PDF, and archive formats are accepted.`
+      );
+      err.statusCode = 400;
+      err.code = "UNSUPPORTED_MEDIA_TYPE";
+      throw err;
+    }
+    if (input.fileSize > MAX_FILE_SIZE_BYTES) {
+      const err = new Error(
+        `File size exceeds maximum permitted limit (${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB).`
+      );
+      err.statusCode = 400;
+      err.code = "FILE_TOO_LARGE";
+      throw err;
+    }
+    const sanitizedFileName = input.fileName.replace(/^.*[\\/]/, "").replace(/[\0\x00-\x1f\x7f]/g, "").replace(/\.\./g, "_");
+    const sanitizedStorageKey = input.storageKey.replace(/\.\./g, "").replace(/^\/+/, "");
     const version = await db.submitDeliverableVersion({
       deliverableId: input.deliverableId,
-      storageKey: input.storageKey,
-      fileName: input.fileName,
+      storageKey: sanitizedStorageKey,
+      fileName: sanitizedFileName,
       fileSize: input.fileSize,
-      fileMimeType: input.fileMimeType,
+      fileMimeType: input.fileMimeType.toLowerCase(),
       changelogNotes: input.changelogNotes
     });
     await db.logAudit({
@@ -38193,7 +38362,7 @@ var import_express10 = __toESM(require_express2());
 
 // src/modules/invoices/invoices.service.ts
 var InvoicesService = class {
-  async createInvoice(organizationId, input) {
+  async createInvoice(organizationId, input, userId, ipAddress, userAgent) {
     const client = await db.findClientById(input.clientId);
     if (!client || client.organizationId !== organizationId) {
       const err = new Error("Client not found in this organization");
@@ -38223,6 +38392,25 @@ var InvoicesService = class {
       notes: input.notes,
       paymentTerms: input.paymentTerms,
       items: input.items
+    });
+    await db.logAudit({
+      organizationId,
+      userId,
+      action: "INVOICE_CREATED",
+      resource: "Invoice",
+      resourceId: invoice.id,
+      diff: {
+        before: null,
+        after: {
+          invoiceNumber: invoice.invoiceNumber,
+          totalAmount: invoice.totalAmount,
+          currency: invoice.currency,
+          clientId: invoice.clientId,
+          status: invoice.status
+        }
+      },
+      ipAddress,
+      userAgent
     });
     return this.enrichInvoice(organizationId, invoice, items);
   }
@@ -38267,7 +38455,7 @@ var InvoicesService = class {
     result.payments = paymentDtos;
     return result;
   }
-  async updateInvoice(organizationId, id, input) {
+  async updateInvoice(organizationId, id, input, userId, ipAddress, userAgent) {
     const inv = await db.findInvoiceById(id);
     if (!inv || inv.organizationId !== organizationId) {
       const err = new Error("Invoice not found");
@@ -38282,9 +38470,22 @@ var InvoicesService = class {
     if (input.paymentTerms !== void 0) updates.paymentTerms = input.paymentTerms;
     const updated = await db.updateInvoice(id, updates);
     const items = await db.getInvoiceItems(updated.id);
+    await db.logAudit({
+      organizationId,
+      userId,
+      action: "INVOICE_UPDATED",
+      resource: "Invoice",
+      resourceId: id,
+      diff: {
+        before: { status: inv.status, notes: inv.notes, paymentTerms: inv.paymentTerms },
+        after: { status: updated.status, notes: updated.notes, paymentTerms: updated.paymentTerms }
+      },
+      ipAddress,
+      userAgent
+    });
     return this.enrichInvoice(organizationId, updated, items);
   }
-  async deleteInvoice(organizationId, id) {
+  async deleteInvoice(organizationId, id, userId, ipAddress, userAgent) {
     const inv = await db.findInvoiceById(id);
     if (!inv || inv.organizationId !== organizationId) {
       const err = new Error("Invoice not found");
@@ -38299,6 +38500,19 @@ var InvoicesService = class {
       throw err;
     }
     await db.deleteInvoice(id);
+    await db.logAudit({
+      organizationId,
+      userId,
+      action: "INVOICE_DELETED",
+      resource: "Invoice",
+      resourceId: id,
+      diff: {
+        before: { invoiceNumber: inv.invoiceNumber, totalAmount: inv.totalAmount, status: inv.status },
+        after: null
+      },
+      ipAddress,
+      userAgent
+    });
   }
   async enrichInvoice(organizationId, inv, items) {
     const client = await db.findClientById(inv.clientId);
@@ -38451,7 +38665,13 @@ invoicesRouter.post(
     try {
       const validated = CreateInvoiceSchema.parse(req.body);
       const organizationId = req.tenant?.organizationId || req.organizationId;
-      const invoice = await invoicesService.createInvoice(organizationId, validated);
+      const invoice = await invoicesService.createInvoice(
+        organizationId,
+        validated,
+        req.user?.id,
+        req.ip || req.headers["x-forwarded-for"],
+        req.headers["user-agent"]
+      );
       res.status(201).json({
         success: true,
         data: invoice,
@@ -38509,7 +38729,10 @@ invoicesRouter.patch(
       const invoice = await invoicesService.updateInvoice(
         organizationId,
         req.params.id,
-        validated
+        validated,
+        req.user?.id,
+        req.ip || req.headers["x-forwarded-for"],
+        req.headers["user-agent"]
       );
       res.status(200).json({
         success: true,
@@ -38527,7 +38750,13 @@ invoicesRouter.delete(
   async (req, res, next) => {
     try {
       const organizationId = req.tenant?.organizationId || req.organizationId;
-      await invoicesService.deleteInvoice(organizationId, req.params.id);
+      await invoicesService.deleteInvoice(
+        organizationId,
+        req.params.id,
+        req.user?.id,
+        req.ip || req.headers["x-forwarded-for"],
+        req.headers["user-agent"]
+      );
       res.status(200).json({
         success: true,
         message: "Invoice deleted successfully"
@@ -38545,7 +38774,7 @@ var import_express12 = __toESM(require_express2());
 var import_crypto2 = __toESM(require("crypto"));
 var PaymentsService = class {
   webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "test_razorpay_secret_key_12345";
-  async recordManualPayment(organizationId, input, recordedById) {
+  async recordManualPayment(organizationId, input, recordedById, ipAddress, userAgent) {
     const invoice = await db.findInvoiceById(input.invoiceId);
     if (!invoice || invoice.organizationId !== organizationId) {
       const err = new Error("Invoice not found in this organization");
@@ -38565,6 +38794,8 @@ var PaymentsService = class {
       err.code = "INVALID_PAYMENT_AMOUNT";
       throw err;
     }
+    const previousPaid = invoice.amountPaid;
+    const previousBalance = invoice.balanceDue;
     const payment = await db.recordPayment({
       organizationId,
       invoiceId: input.invoiceId,
@@ -38577,6 +38808,24 @@ var PaymentsService = class {
       receiptNumber: input.receiptNumber,
       notes: input.notes,
       recordedById
+    });
+    await db.logAudit({
+      organizationId,
+      userId: recordedById,
+      action: "PAYMENT_RECORDED",
+      resource: "Payment",
+      resourceId: payment.id,
+      diff: {
+        before: { amountPaid: previousPaid, balanceDue: previousBalance, status: invoice.status },
+        after: {
+          paymentAmount: payment.amount,
+          newAmountPaid: previousPaid + payment.amount,
+          method: payment.method,
+          transactionRef: payment.transactionRef
+        }
+      },
+      ipAddress,
+      userAgent
     });
     return {
       id: payment.id,
@@ -38770,7 +39019,9 @@ paymentsRouter.post(
       const payment = await paymentsService.recordManualPayment(
         organizationId,
         validated,
-        userId
+        userId,
+        req.ip || req.headers["x-forwarded-for"],
+        req.headers["user-agent"]
       );
       res.status(201).json({
         success: true,
@@ -38874,6 +39125,142 @@ reportsRouter.get(
   }
 );
 
+// src/modules/privacy/privacy.controller.ts
+var import_express14 = __toESM(require_express2());
+
+// src/modules/privacy/privacy.service.ts
+var PrivacyService = class {
+  /**
+   * India DPDP Act 2023 - Data Subject Access Request (DSAR) / Data Portability Export
+   */
+  async exportUserData(userId) {
+    const user = await db.findUserById(userId);
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      err.code = "USER_NOT_FOUND";
+      throw err;
+    }
+    const memberships = await db.getUserMemberships(userId);
+    const auditLogs = [];
+    for (const log of db.auditLogs.values()) {
+      if (log.userId === userId) {
+        auditLogs.push({ ...log });
+      }
+    }
+    const { passwordHash, ...cleanUser } = user;
+    return {
+      dataSubject: cleanUser,
+      memberships: memberships.map((m) => ({
+        organizationName: m.organization.name,
+        role: m.membership.role,
+        joinedAt: m.membership.joinedAt
+      })),
+      activityTrail: auditLogs,
+      exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      complianceNotice: "Data export provided pursuant to the Digital Personal Data Protection (DPDP) Act, 2023."
+    };
+  }
+  /**
+   * India DPDP Act 2023 - Right to Erasure / Data Deletion Request
+   */
+  async requestDataDeletion(userId, reason, ipAddress) {
+    const user = await db.findUserById(userId);
+    if (!user) {
+      const err = new Error("User not found");
+      err.statusCode = 404;
+      err.code = "USER_NOT_FOUND";
+      throw err;
+    }
+    const memberships = await db.getUserMemberships(userId);
+    const soleOwnerOrgs = memberships.filter(
+      (m) => m.membership.role === "ORGANIZATION_OWNER"
+    );
+    if (soleOwnerOrgs.length > 0) {
+      const err = new Error(
+        "Cannot erase data while designated as sole organization owner. Please transfer ownership or close your organization first."
+      );
+      err.statusCode = 400;
+      err.code = "CANNOT_ERASE_SOLE_OWNER";
+      throw err;
+    }
+    const anonymizedEmail = `deleted_${userId.substring(0, 8)}@privacy.setsuzoku.in`;
+    user.fullName = "[Data Principal Erased - DPDP Act]";
+    user.email = anonymizedEmail;
+    user.phone = null;
+    user.avatarUrl = null;
+    user.updatedAt = /* @__PURE__ */ new Date();
+    db.users.set(userId, user);
+    if (memberships.length > 0) {
+      await db.logAudit({
+        organizationId: memberships[0].organization.id,
+        userId,
+        action: "DPDP_RIGHT_TO_ERASURE_EXECUTED",
+        resource: "User",
+        resourceId: userId,
+        diff: { reason: reason || "Data Principal Requested Erasure" },
+        ipAddress
+      });
+    }
+    return {
+      success: true,
+      message: "Personal data has been anonymized and erased in accordance with Section 12 of the DPDP Act, 2023.",
+      erasedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  getPrivacyPolicy() {
+    return {
+      version: "2026.1",
+      jurisdiction: "Republic of India",
+      statutoryFramework: "Digital Personal Data Protection (DPDP) Act, 2023",
+      dataFiduciary: "Setsuzoku Media Labs Private Limited",
+      grievanceOfficer: {
+        name: "Data Protection Officer",
+        email: "info@setsuzoku.in",
+        address: "Mumbai, Maharashtra, India",
+        resolutionSlaHours: 72
+      },
+      purposes: [
+        "Contractual execution and client deliverable sign-offs",
+        "GST-compliant invoicing and audit-logged tax reporting",
+        "Secure multi-tenant agency operations"
+      ],
+      retentionPeriod: "Retained during active relationship + statutory 7 years for GST financial ledgers"
+    };
+  }
+};
+var privacyService = new PrivacyService();
+
+// src/modules/privacy/privacy.controller.ts
+var privacyRouter = (0, import_express14.Router)();
+privacyRouter.get("/policy", (req, res) => {
+  return res.status(200).json({
+    success: true,
+    data: privacyService.getPrivacyPolicy()
+  });
+});
+privacyRouter.get("/export", authGuard, async (req, res, next) => {
+  try {
+    const data = await privacyService.exportUserData(req.user.id);
+    return res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+privacyRouter.post("/delete-request", authGuard, async (req, res, next) => {
+  try {
+    const reason = req.body?.reason;
+    const ip = req.ip || req.headers["x-forwarded-for"];
+    const result = await privacyService.requestDataDeletion(req.user.id, reason, ip);
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // src/middleware/error.middleware.ts
 function errorMiddleware(err, req, res, next) {
   if (err instanceof ZodError || err.name === "ZodError" || Array.isArray(err.issues)) {
@@ -38891,29 +39278,79 @@ function errorMiddleware(err, req, res, next) {
     });
   }
   const statusCode = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
   console.error(`[API Error] ${req.method} ${req.url} - ${statusCode}:`, err);
+  const clientMessage = statusCode >= 500 ? "An unexpected error occurred. Please contact technical support if this persists." : err.message || "Request failed";
   return res.status(statusCode).json({
     success: false,
     error: {
-      code: err.code || "INTERNAL_ERROR",
-      message
+      code: err.code || (statusCode >= 500 ? "INTERNAL_SERVER_ERROR" : "BAD_REQUEST"),
+      message: clientMessage
     }
   });
 }
 
 // src/app.ts
 function createApp() {
-  const app2 = (0, import_express14.default)();
-  app2.use(helmet());
+  const app2 = (0, import_express15.default)();
   app2.use(
-    (0, import_cors.default)({
-      origin: true,
-      credentials: true
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'"],
+          frameAncestors: ["'none'"],
+          // Disallow embedding inside iframes (Clickjacking defense)
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"]
+        }
+      },
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+      xContentTypeOptions: true,
+      xFrameOptions: { action: "deny" }
     })
   );
-  app2.use(import_express14.default.json());
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "https://setsuzokuos.vercel.app",
+    ENV.CORS_ORIGIN
+  ].filter(Boolean);
+  app2.use(
+    (0, import_cors.default)({
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin ${origin} not allowed by CORS security policy`));
+      },
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Organization-Id",
+        "x-razorpay-signature",
+        "X-Requested-With"
+      ]
+    })
+  );
+  app2.use(import_express15.default.json({ limit: "10mb" }));
   app2.use((0, import_cookie_parser.default)());
+  app2.use(
+    "/api",
+    securityRateLimiter.limit({
+      windowMs: 60 * 1e3,
+      max: 300,
+      message: "Too many API requests from this client. Please throttle requests."
+    })
+  );
   app2.get(["/health", "/api/health", "/api/v1/health", "/v1/health"], (req, res) => {
     res.status(200).json({
       status: "UP",
@@ -38936,6 +39373,7 @@ function createApp() {
     app2.use(`${prefix}/invoices`, invoicesRouter);
     app2.use(`${prefix}/payments`, paymentsRouter);
     app2.use(`${prefix}/reports`, reportsRouter);
+    app2.use(`${prefix}/privacy`, privacyRouter);
   };
   mountRoutes("/api/v1");
   mountRoutes("/v1");

@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { ENV } from '../../config/env';
 import { db, UserRecord } from '../../storage/db';
+import { securityRateLimiter } from '../../middleware/rate-limiter.middleware';
 import {
   RegisterInput,
   LoginInput,
@@ -97,8 +98,22 @@ export class AuthService {
   }
 
   public async login(input: LoginInput): Promise<AuthResponseDto> {
-    const user = await db.findUserByEmail(input.email);
+    const normalizedEmail = input.email.trim().toLowerCase();
+
+    // Check account lockout
+    const lockout = securityRateLimiter.checkLockout(normalizedEmail);
+    if (lockout.isLocked) {
+      const err: any = new Error(
+        `Account is temporarily locked due to repeated failed login attempts. Please try again after ${Math.ceil(lockout.remainingSec / 60)} minutes.`
+      );
+      err.statusCode = 429;
+      err.code = 'ACCOUNT_LOCKED';
+      throw err;
+    }
+
+    const user = await db.findUserByEmail(normalizedEmail);
     if (!user) {
+      securityRateLimiter.recordAuthFailure(normalizedEmail);
       const err: any = new Error('Invalid email or password');
       err.statusCode = 401;
       err.code = 'INVALID_CREDENTIALS';
@@ -107,11 +122,21 @@ export class AuthService {
 
     const isValid = await bcrypt.compare(input.password, user.passwordHash);
     if (!isValid) {
+      const failure = securityRateLimiter.recordAuthFailure(normalizedEmail);
+      if (failure.locked) {
+        const err: any = new Error('Account has been locked due to 5 consecutive failed login attempts. Please try again after 15 minutes.');
+        err.statusCode = 429;
+        err.code = 'ACCOUNT_LOCKED';
+        throw err;
+      }
       const err: any = new Error('Invalid email or password');
       err.statusCode = 401;
       err.code = 'INVALID_CREDENTIALS';
       throw err;
     }
+
+    // Success - reset any previous failed attempts
+    securityRateLimiter.recordAuthSuccess(normalizedEmail);
 
     const { accessToken } = this.generateTokens(user.id);
     const memberships = await db.getUserMemberships(user.id);

@@ -9,6 +9,23 @@ import {
   ApprovalDto,
 } from '@setsuzoku/shared';
 
+const ALLOWED_MEDIA_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'video/mp4',
+  'video/quicktime',
+  'video/x-msvideo',
+  'application/pdf',
+  'application/zip',
+  'audio/mpeg',
+  'audio/wav',
+  'audio/aac',
+]);
+
+const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB max for video/production deliverables
+
 export class DeliverablesService {
   public async createDeliverable(
     organizationId: string,
@@ -72,12 +89,41 @@ export class DeliverablesService {
       throw err;
     }
 
+    // Security Check: File upload validation (allowlist MIME, size limit, path traversal defense)
+    if (!ALLOWED_MEDIA_MIME_TYPES.has(input.fileMimeType.toLowerCase())) {
+      const err: any = new Error(
+        `Disallowed file type: ${input.fileMimeType}. Only verified image, video, audio, PDF, and archive formats are accepted.`
+      );
+      err.statusCode = 400;
+      err.code = 'UNSUPPORTED_MEDIA_TYPE';
+      throw err;
+    }
+
+    if (input.fileSize > MAX_FILE_SIZE_BYTES) {
+      const err: any = new Error(
+        `File size exceeds maximum permitted limit (${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB).`
+      );
+      err.statusCode = 400;
+      err.code = 'FILE_TOO_LARGE';
+      throw err;
+    }
+
+    // Sanitize filename against directory traversal / malicious path characters
+    const sanitizedFileName = input.fileName
+      .replace(/^.*[\\/]/, '')
+      .replace(/[\0\x00-\x1f\x7f]/g, '')
+      .replace(/\.\./g, '_');
+
+    const sanitizedStorageKey = input.storageKey
+      .replace(/\.\./g, '')
+      .replace(/^\/+/, '');
+
     const version = await db.submitDeliverableVersion({
       deliverableId: input.deliverableId,
-      storageKey: input.storageKey,
-      fileName: input.fileName,
+      storageKey: sanitizedStorageKey,
+      fileName: sanitizedFileName,
       fileSize: input.fileSize,
-      fileMimeType: input.fileMimeType,
+      fileMimeType: input.fileMimeType.toLowerCase(),
       changelogNotes: input.changelogNotes,
     });
 

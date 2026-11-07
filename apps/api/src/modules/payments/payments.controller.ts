@@ -46,7 +46,9 @@ paymentsRouter.post(
       const payment = await paymentsService.recordManualPayment(
         organizationId,
         validated,
-        userId
+        userId,
+        req.ip || (req.headers['x-forwarded-for'] as string),
+        req.headers['user-agent'] as string
       );
 
       res.status(201).json({
