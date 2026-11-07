@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
@@ -20,71 +21,11 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-const DEMO_CLIENTS: ClientDto[] = [
-  {
-    id: 'client_demo_001',
-    organizationId: 'org_demo_001',
-    name: 'Aditya Sen',
-    company: 'Swiggy Brand Studio',
-    email: 'aditya.sen@swiggy.in',
-    phone: '+91 98450 12890',
-    billingAddress: 'Tower D, IBC Knowledge Park, Bannerghatta Road, Bengaluru',
-    taxId: '29AABCS1429B1Z',
-    category: 'Enterprise Fixed-Scope',
-    notes: 'Quarterly brand commercial video production retainer',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    stats: {
-      totalQuotations: 3,
-      totalProjects: 2,
-      totalInvoiced: 485000,
-    },
-  },
-  {
-    id: 'client_demo_002',
-    organizationId: 'org_demo_001',
-    name: 'Priya Varma',
-    company: 'Zepto Media Lab',
-    email: 'priya.varma@zepto.co.in',
-    phone: '+91 91234 56789',
-    billingAddress: '100 Feet Road, Indiranagar, Bengaluru',
-    taxId: '29AABCZ9911C1Z',
-    category: 'Retainer',
-    notes: 'Packaging 3D CGI and digital campaign assets',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    stats: {
-      totalQuotations: 2,
-      totalProjects: 1,
-      totalInvoiced: 240000,
-    },
-  },
-  {
-    id: 'client_demo_003',
-    organizationId: 'org_demo_001',
-    name: 'Rahul Sharma',
-    company: 'Ather Energy Creative',
-    email: 'rahul.sharma@atherenergy.com',
-    phone: '+91 99800 22331',
-    billingAddress: 'IBC Knowledge Park, Bannerghatta Road, Bengaluru',
-    taxId: '29AAACA7722M1Z',
-    category: 'Enterprise Fixed-Scope',
-    notes: 'Electric scooter launch campaign & 3D key visual renders',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    stats: {
-      totalQuotations: 4,
-      totalProjects: 3,
-      totalInvoiced: 720000,
-    },
-  },
-];
-
 export const ClientsPage: React.FC = () => {
   const { currentOrg } = useAuth();
+  const { clients, createClient } = useData();
   const navigate = useNavigate();
 
-  const [clients, setClients] = useState<ClientDto[]>(DEMO_CLIENTS);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -99,45 +40,23 @@ export const ClientsPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [billingAddress, setBillingAddress] = useState('');
   const [taxId, setTaxId] = useState('');
-  const [category, setCategory] = useState('Retainer');
+  const [category, setCategory] = useState('Enterprise Fixed-Scope');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchClients = async () => {
-    try {
-      setIsLoading(true);
-      const query = search ? `?search=${encodeURIComponent(search)}` : '';
-      const data = await apiRequest<ClientDto[]>(`/clients${query}`);
-      if (Array.isArray(data) && data.length > 0) {
-        setClients(data);
-      }
-    } catch (err) {
-      console.warn('Failed to load clients from API, retaining demo clients:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, [currentOrg, search]);
 
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const created = await apiRequest<ClientDto>('/clients', {
-        method: 'POST',
-        body: JSON.stringify({
-          name,
-          company: company || undefined,
-          email,
-          phone: phone || undefined,
-          billingAddress: billingAddress || undefined,
-          taxId: taxId || undefined,
-          category,
-          notes: notes || undefined,
-        }),
+      await createClient({
+        name,
+        company: company || undefined,
+        email,
+        phone: phone || undefined,
+        billingAddress: billingAddress || undefined,
+        taxId: taxId || undefined,
+        category,
+        notes: notes || undefined,
       });
 
       setIsAddOpen(false);
@@ -148,40 +67,9 @@ export const ClientsPage: React.FC = () => {
       setBillingAddress('');
       setTaxId('');
       setNotes('');
-      if (created && created.id) {
-        setClients((prev) => [created, ...prev.filter((c) => c.id !== created.id)]);
-      }
-      await fetchClients();
     } catch (err: any) {
-      console.warn('Backend create client returned error, persisting client locally in demo view:', err);
-      const fallbackClient: ClientDto = {
-        id: `client_${Date.now()}`,
-        organizationId: currentOrg?.id || 'org_demo_001',
-        name,
-        company: company || null,
-        email,
-        phone: phone || null,
-        billingAddress: billingAddress || null,
-        taxId: taxId || null,
-        category: category || 'Retainer',
-        notes: notes || null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        stats: {
-          totalQuotations: 0,
-          totalProjects: 0,
-          totalInvoiced: 0,
-        },
-      };
-      setClients((prev) => [fallbackClient, ...prev]);
+      console.warn('Backend create client error:', err);
       setIsAddOpen(false);
-      setName('');
-      setCompany('');
-      setEmail('');
-      setPhone('');
-      setBillingAddress('');
-      setTaxId('');
-      setNotes('');
     } finally {
       setIsSubmitting(false);
     }

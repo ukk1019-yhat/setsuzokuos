@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
@@ -35,12 +36,11 @@ interface LineItemForm {
 
 export const QuotationsPage: React.FC = () => {
   const { currentOrg } = useAuth();
+  const { clients, quotations, createQuotation, updateQuotationStatus } = useData();
   const [searchParams] = useSearchParams();
   const preselectedClientId = searchParams.get('clientId');
 
-  const [quotations, setQuotations] = useState<QuotationDto[]>([]);
-  const [clients, setClients] = useState<ClientDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modals
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
@@ -64,37 +64,14 @@ export const QuotationsPage: React.FC = () => {
   ]);
   const [isCreating, setIsCreating] = useState(false);
 
-  const fetchQuotations = async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiRequest<QuotationDto[]>('/quotations');
-      setQuotations(data);
-    } catch (err) {
-      console.error('Failed to load quotations:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchClients = async () => {
-    try {
-      const data = await apiRequest<ClientDto[]>('/clients');
-      setClients(data);
-      if (preselectedClientId) {
-        setClientId(preselectedClientId);
-        setIsBuilderOpen(true);
-      } else if (data.length > 0 && !clientId) {
-        setClientId(data[0].id);
-      }
-    } catch (err) {
-      console.error('Failed to load clients for quote builder:', err);
-    }
-  };
-
   useEffect(() => {
-    fetchQuotations();
-    fetchClients();
-  }, [currentOrg]);
+    if (preselectedClientId) {
+      setClientId(preselectedClientId);
+      setIsBuilderOpen(true);
+    } else if (clients.length > 0 && !clientId) {
+      setClientId(clients[0].id);
+    }
+  }, [preselectedClientId, clients]);
 
   // Live Decimal Calculations
   const calculatedSubtotal = lineItems.reduce((acc, item) => {
@@ -124,7 +101,8 @@ export const QuotationsPage: React.FC = () => {
 
   const handleCreateQuotation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientId) {
+    const effectiveClientId = clientId || (clients.length > 0 ? clients[0].id : '');
+    if (!effectiveClientId) {
       return;
     }
     if (lineItems.length === 0) {
@@ -133,57 +111,24 @@ export const QuotationsPage: React.FC = () => {
 
     setIsCreating(true);
     try {
-      await apiRequest('/quotations', {
-        method: 'POST',
-        body: JSON.stringify({
-          clientId,
-          validUntil: new Date(validUntil).toISOString(),
-          paymentTerms: paymentTerms || undefined,
-          notes: notes || undefined,
-          discountAmount: discountVal,
-          taxAmount: taxVal,
-          items: lineItems.map((item) => ({
-            serviceName: item.serviceName,
-            description: item.description || undefined,
-            quantity: Number(item.quantity),
-            unitPrice: Number(item.unitPrice),
-          })),
-        }),
-      });
-
-      setIsBuilderOpen(false);
-      await fetchQuotations();
-    } catch (err: any) {
-      console.warn('Backend create quotation error, persisting locally in demo view:', err);
-      const fallbackQuote: QuotationDto = {
-        id: `quote_${Date.now()}`,
-        organizationId: currentOrg?.id || 'org_demo_001',
-        clientId,
-        createdById: 'user_admin_001',
-        quoteNumber: `QT-2026-0${Math.floor(100 + Math.random() * 900)}`,
-        status: QuotationStatus.DRAFT,
+      await createQuotation({
+        clientId: effectiveClientId,
         validUntil: new Date(validUntil).toISOString(),
-        paymentTerms: paymentTerms || '50% Advance, 50% on Final Master Delivery',
+        paymentTerms: paymentTerms || undefined,
         notes: notes || undefined,
-        subtotal: calculatedSubtotal,
         discountAmount: discountVal,
         taxAmount: taxVal,
-        totalAmount: calculatedTotal,
-        currency: 'INR',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        items: lineItems.map((item, idx) => ({
-          id: `item_${Date.now()}_${idx}`,
-          quotationId: `quote_${Date.now()}`,
+        items: lineItems.map((item) => ({
           serviceName: item.serviceName,
           description: item.description || undefined,
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
-          totalPrice: Number(item.quantity) * Number(item.unitPrice),
-          createdAt: new Date().toISOString(),
         })),
-      };
-      setQuotations((prev) => [fallbackQuote, ...prev]);
+      });
+
+      setIsBuilderOpen(false);
+    } catch (err: any) {
+      console.warn('Backend create quotation error:', err);
       setIsBuilderOpen(false);
     } finally {
       setIsCreating(false);
@@ -191,32 +136,16 @@ export const QuotationsPage: React.FC = () => {
   };
 
   const handleSendQuote = async (id: string) => {
-    setQuotations((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, status: QuotationStatus.SENT } : q))
-    );
+    await updateQuotationStatus(id, QuotationStatus.SENT);
     if (selectedQuote && selectedQuote.id === id) {
       setSelectedQuote((prev) => (prev ? { ...prev, status: QuotationStatus.SENT } : null));
-    }
-    try {
-      await apiRequest(`/quotations/${id}/send`, { method: 'POST' });
-      await fetchQuotations();
-    } catch (err: any) {
-      console.warn('Failed to send quotation on API, updated locally:', err);
     }
   };
 
   const handleAcceptQuote = async (id: string) => {
-    setQuotations((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, status: QuotationStatus.ACCEPTED } : q))
-    );
+    await updateQuotationStatus(id, QuotationStatus.ACCEPTED);
     if (selectedQuote && selectedQuote.id === id) {
       setSelectedQuote((prev) => (prev ? { ...prev, status: QuotationStatus.ACCEPTED } : null));
-    }
-    try {
-      await apiRequest(`/quotations/${id}/accept`, { method: 'POST' });
-      await fetchQuotations();
-    } catch (err: any) {
-      console.warn('Failed to record acceptance on API, updated locally:', err);
     }
   };
 
@@ -255,7 +184,12 @@ export const QuotationsPage: React.FC = () => {
           variant="primary"
           size="sm"
           className="gap-1.5"
-          onClick={() => setIsBuilderOpen(true)}
+          onClick={() => {
+            if (!clientId && clients.length > 0) {
+              setClientId(clients[0].id);
+            }
+            setIsBuilderOpen(true);
+          }}
         >
           <Plus className="w-4 h-4" />
           <span>New Quotation</span>
@@ -496,11 +430,11 @@ export const QuotationsPage: React.FC = () => {
               </label>
               <select
                 required
-                value={clientId}
+                value={clientId || (clients.length > 0 ? clients[0].id : '')}
                 onChange={(e) => setClientId(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-white border border-brand-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-teal"
               >
-                <option value="">Select a client...</option>
+                {clients.length === 0 && <option value="">No client accounts available</option>}
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} {c.company ? `(${c.company})` : ''}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
@@ -26,11 +27,10 @@ import {
 
 export const TasksPage: React.FC = () => {
   const { currentOrg, user } = useAuth();
-  const [tasks, setTasks] = useState<TaskDto[]>([]);
-  const [projects, setProjects] = useState<ProjectDto[]>([]);
+  const { tasks, projects, createTask, updateTaskStatus, refreshData } = useData();
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'ALL' | 'MY' | 'TODO' | 'COMPLETED'>('ALL');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -49,103 +49,46 @@ export const TasksPage: React.FC = () => {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [newComment, setNewComment] = useState('');
 
-  const fetchTasks = async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiRequest<TaskDto[]>('/tasks');
-      setTasks(data);
-    } catch (err) {
-      console.error('Failed to load tasks:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchDependencies = async () => {
-    try {
-      const [projData, membersData] = await Promise.all([
-        apiRequest<ProjectDto[]>('/projects'),
-        apiRequest<any[]>('/members'),
-      ]);
-      setProjects(projData);
-      setTeamMembers(membersData);
-      if (projData.length > 0 && !projectId) setProjectId(projData[0].id);
-    } catch (err) {
-      console.error('Failed to load projects or members:', err);
-    }
-  };
-
   useEffect(() => {
-    fetchTasks();
-    fetchDependencies();
-  }, [currentOrg]);
+    if (projects.length > 0 && !projectId) {
+      setProjectId(projects[0].id);
+    }
+  }, [projects]);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!projectId) {
+    const effectiveProjectId = projectId || (projects.length > 0 ? projects[0].id : '');
+    if (!effectiveProjectId) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await apiRequest('/tasks', {
-        method: 'POST',
-        body: JSON.stringify({
-          projectId,
-          title,
-          description: description || undefined,
-          assignedToId: assignedToId || undefined,
-          priority,
-          dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-        }),
+      await createTask({
+        projectId: effectiveProjectId,
+        title,
+        description: description || undefined,
+        assignedToId: assignedToId || undefined,
+        priority,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
       });
 
       setIsCreateOpen(false);
       setTitle('');
       setDescription('');
       setDueDate('');
-      await fetchTasks();
     } catch (err: any) {
-      console.warn('Backend create task error, persisting locally in demo view:', err);
-      const fallbackTask: TaskDto = {
-        id: `task_${Date.now()}`,
-        projectId,
-        title: title.trim(),
-        description: description?.trim() || undefined,
-        assignedToId: assignedToId || undefined,
-        priority: priority as any,
-        status: TaskStatus.TODO,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        subtasks: [],
-        comments: [],
-      };
-      setTasks((prev) => [fallbackTask, ...prev]);
+      console.warn('Backend create task error:', err);
       setIsCreateOpen(false);
-      setTitle('');
-      setDescription('');
-      setDueDate('');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
-    );
+    await updateTaskStatus(taskId, newStatus);
     if (selectedTask && selectedTask.id === taskId) {
       setSelectedTask((prev) => (prev ? { ...prev, status: newStatus } : null));
-    }
-    try {
-      await apiRequest(`/tasks/${taskId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: newStatus }),
-      });
-      await fetchTasks();
-    } catch (err: any) {
-      console.warn('Failed to update task status on API, updated locally:', err);
     }
   };
 
@@ -171,7 +114,7 @@ export const TasksPage: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({ title: newSubtaskTitle.trim() }),
       });
-      await fetchTasks();
+      await refreshData();
     } catch (err: any) {
       console.warn('Backend add subtask error, recorded locally:', err);
     }
@@ -192,7 +135,7 @@ export const TasksPage: React.FC = () => {
     }
     try {
       await apiRequest(`/tasks/subtasks/${subtaskId}/toggle`, { method: 'POST' });
-      await fetchTasks();
+      await refreshData();
     } catch (err: any) {
       console.warn('Backend toggle subtask error, updated locally:', err);
     }

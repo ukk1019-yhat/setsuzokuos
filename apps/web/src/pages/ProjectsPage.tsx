@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
@@ -38,10 +39,8 @@ const PROJECT_STATUSES: { status: ProjectStatus; label: string; variant: any }[]
 
 export const ProjectsPage: React.FC = () => {
   const { currentOrg } = useAuth();
-  const [projects, setProjects] = useState<ProjectDto[]>([]);
-  const [clients, setClients] = useState<ClientDto[]>([]);
-  const [quotations, setQuotations] = useState<QuotationDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { projects, clients, quotations, createProject, spawnProjectFromQuotation } = useData();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -61,52 +60,30 @@ export const ProjectsPage: React.FC = () => {
   const [selectedQuoteId, setSelectedQuoteId] = useState('');
   const [customProjectName, setCustomProjectName] = useState('');
 
-  const fetchProjects = async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiRequest<ProjectDto[]>('/projects');
-      setProjects(data);
-    } catch (err) {
-      console.error('Failed to load projects:', err);
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (clients.length > 0 && !clientId) {
+      setClientId(clients[0].id);
     }
-  };
-
-  const fetchDependencies = async () => {
-    try {
-      const [clientData, quoteData] = await Promise.all([
-        apiRequest<ClientDto[]>('/clients'),
-        apiRequest<QuotationDto[]>('/quotations?status=ACCEPTED'),
-      ]);
-      setClients(clientData);
-      setQuotations(quoteData);
-      if (clientData.length > 0 && !clientId) setClientId(clientData[0].id);
-      if (quoteData.length > 0 && !selectedQuoteId) setSelectedQuoteId(quoteData[0].id);
-    } catch (err) {
-      console.error('Failed to load clients or quotes:', err);
-    }
-  };
+  }, [clients]);
 
   useEffect(() => {
-    fetchProjects();
-    fetchDependencies();
-  }, [currentOrg]);
+    if (quotations.length > 0 && !selectedQuoteId) {
+      setSelectedQuoteId(quotations[0].id);
+    }
+  }, [quotations]);
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
+    const effectiveClientId = clientId || (clients.length > 0 ? clients[0].id : '');
     setIsSubmitting(true);
     try {
-      await apiRequest('/projects', {
-        method: 'POST',
-        body: JSON.stringify({
-          name,
-          clientId,
-          budget: budget ? parseFloat(budget) : 0,
-          deadline: deadline ? new Date(deadline).toISOString() : undefined,
-          description: description || undefined,
-          priority,
-        }),
+      await createProject({
+        name,
+        clientId: effectiveClientId,
+        budget: budget ? parseFloat(budget) : 0,
+        deadline: deadline ? new Date(deadline).toISOString() : undefined,
+        description: description || undefined,
+        priority,
       });
 
       setIsCreateOpen(false);
@@ -114,29 +91,9 @@ export const ProjectsPage: React.FC = () => {
       setBudget('');
       setDeadline('');
       setDescription('');
-      await fetchProjects();
     } catch (err: any) {
-      console.warn('Backend create project error, persisting locally in demo view:', err);
-      const fallbackProj: ProjectDto = {
-        id: `proj_${Date.now()}`,
-        organizationId: currentOrg?.id || 'org_demo_001',
-        clientId,
-        name: name.trim(),
-        code: `PRJ-2026-0${Math.floor(10 + Math.random() * 90)}`,
-        status: ProjectStatus.ACTIVE,
-        priority: Priority.MEDIUM,
-        budget: budget ? parseFloat(budget) : 0,
-        deadline: deadline ? new Date(deadline).toISOString() : undefined,
-        description: description.trim() || undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setProjects((prev) => [fallbackProj, ...prev]);
+      console.warn('Backend create project error:', err);
       setIsCreateOpen(false);
-      setName('');
-      setBudget('');
-      setDeadline('');
-      setDescription('');
     } finally {
       setIsSubmitting(false);
     }
@@ -144,27 +101,19 @@ export const ProjectsPage: React.FC = () => {
 
   const handleSpawnFromQuote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedQuoteId) {
+    const effectiveQuoteId = selectedQuoteId || (quotations.length > 0 ? quotations[0].id : '');
+    if (!effectiveQuoteId) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await apiRequest('/projects/convert-quote', {
-        method: 'POST',
-        body: JSON.stringify({
-          quotationId: selectedQuoteId,
-          name: customProjectName || undefined,
-        }),
-      });
-
+      await spawnProjectFromQuotation(effectiveQuoteId, customProjectName || undefined);
       setIsSpawnQuoteOpen(false);
       setCustomProjectName('');
-      await fetchProjects();
     } catch (err: any) {
-      console.warn('Backend spawn quote error, handled locally:', err);
+      console.warn('Backend spawn quote error:', err);
       setIsSpawnQuoteOpen(false);
-      setCustomProjectName('');
     } finally {
       setIsSubmitting(false);
     }
@@ -463,10 +412,11 @@ export const ProjectsPage: React.FC = () => {
               </label>
               <select
                 required
-                value={clientId}
+                value={clientId || (clients.length > 0 ? clients[0].id : '')}
                 onChange={(e) => setClientId(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-white border border-brand-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-teal"
               >
+                {clients.length === 0 && <option value="">No client accounts available</option>}
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} {c.company ? `(${c.company})` : ''}

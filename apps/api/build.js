@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 
 // Resolve esbuild from monorepo dependencies
@@ -14,13 +15,17 @@ try {
 
 console.log('[SETSUZOKU BUILD] Bundling Express API into standalone index.js...');
 
+const appsApiOutfile = path.join(__dirname, 'index.js');
+const rootApiDir = path.join(__dirname, '../../api');
+const rootApiOutfile = path.join(rootApiDir, 'index.js');
+
 esbuild.buildSync({
   entryPoints: [path.join(__dirname, 'src/index.ts')],
   bundle: true,
   platform: 'node',
   target: 'node18',
   format: 'cjs',
-  outfile: path.join(__dirname, 'index.js'),
+  outfile: appsApiOutfile,
   footer: {
     js: `
 if (typeof module !== 'undefined' && module.exports) {
@@ -35,4 +40,9 @@ if (typeof module !== 'undefined' && module.exports) {
   minify: false,
 });
 
-console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js!');
+if (!fs.existsSync(rootApiDir)) {
+  fs.mkdirSync(rootApiDir, { recursive: true });
+}
+fs.copyFileSync(appsApiOutfile, rootApiOutfile);
+
+console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js and api/index.js!');

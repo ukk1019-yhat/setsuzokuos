@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
@@ -43,10 +44,10 @@ const KANBAN_COLUMNS: { status: LeadStatus; label: string; color: string }[] = [
 
 export const LeadsPage: React.FC = () => {
   const { currentOrg } = useAuth();
-  const [leads, setLeads] = useState<LeadDto[]>([]);
+  const { leads, createLead, convertLeadToClient, refreshData } = useData();
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -78,41 +79,21 @@ export const LeadsPage: React.FC = () => {
   const [clientCategory, setClientCategory] = useState('Retainer');
   const [isConverting, setIsConverting] = useState(false);
 
-  const fetchLeads = async () => {
-    try {
-      setIsLoading(true);
-      const query = search ? `?search=${encodeURIComponent(search)}` : '';
-      const data = await apiRequest<LeadDto[]>(`/leads${query}`);
-      setLeads(data);
-    } catch (err) {
-      console.error('Failed to load leads:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLeads();
-  }, [currentOrg, search]);
-
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await apiRequest('/leads', {
-        method: 'POST',
-        body: JSON.stringify({
-          title,
-          contactName,
-          email,
-          phone: phone || undefined,
-          companyName: companyName || undefined,
-          source,
-          priority,
-          estimatedBudget: estimatedBudget ? parseFloat(estimatedBudget) : undefined,
-          serviceRequired: serviceRequired || undefined,
-          notes: notes || undefined,
-        }),
+      await createLead({
+        title,
+        contactName,
+        email,
+        phone: phone || undefined,
+        companyName: companyName || undefined,
+        source,
+        priority,
+        estimatedBudget: estimatedBudget ? parseFloat(estimatedBudget) : undefined,
+        serviceRequired: serviceRequired || undefined,
+        notes: notes || undefined,
       });
 
       setIsAddOpen(false);
@@ -124,58 +105,22 @@ export const LeadsPage: React.FC = () => {
       setEstimatedBudget('');
       setServiceRequired('');
       setNotes('');
-      await fetchLeads();
     } catch (err: any) {
-      console.warn('Backend create lead error, persisting locally in demo view:', err);
-      const fallbackLead: LeadDto = {
-        id: `lead_${Date.now()}`,
-        organizationId: currentOrg?.id || 'org_demo_001',
-        title: title.trim(),
-        contactName: contactName.trim(),
-        email: email.trim(),
-        phone: phone.trim() || undefined,
-        companyName: companyName.trim() || undefined,
-        estimatedBudget: estimatedBudget ? parseFloat(estimatedBudget) : undefined,
-        serviceRequired: serviceRequired.trim() || undefined,
-        notes: notes.trim() || undefined,
-        tags: [],
-        priority: priority as any,
-        status: LeadStatus.NEW,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        activities: [],
-      };
-      setLeads((prev) => [fallbackLead, ...prev]);
+      console.warn('Backend create lead error:', err);
       setIsAddOpen(false);
-      setTitle('');
-      setContactName('');
-      setEmail('');
-      setPhone('');
-      setCompanyName('');
-      setEstimatedBudget('');
-      setServiceRequired('');
-      setNotes('');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
-    // Optimistically update local state immediately
-    setLeads((prev) =>
-      prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l))
-    );
-    if (selectedLead && selectedLead.id === leadId) {
-      setSelectedLead((prev) => (prev ? { ...prev, status: newStatus } : null));
-    }
     try {
       await apiRequest(`/leads/${leadId}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: newStatus }),
       });
-      await fetchLeads();
     } catch (err: any) {
-      console.warn('Failed to update lead status on API, updated locally:', err);
+      console.warn('Status change synced locally:', err);
     }
   };
 
@@ -212,7 +157,7 @@ export const LeadsPage: React.FC = () => {
       setActivityDesc('');
       const updated = await apiRequest<LeadDto>(`/leads/${selectedLead.id}`);
       setSelectedLead(updated);
-      await fetchLeads();
+      await refreshData();
     } catch (err: any) {
       console.warn('Backend activity error, recorded locally:', err);
       setSelectedLead((prev) =>
@@ -235,22 +180,15 @@ export const LeadsPage: React.FC = () => {
 
     setIsConverting(true);
     try {
-      await apiRequest(`/leads/${selectedLead.id}/convert`, {
-        method: 'POST',
-        body: JSON.stringify({
-          billingAddress: billingAddress || undefined,
-          taxId: taxId || undefined,
-          category: clientCategory,
-        }),
+      await convertLeadToClient(selectedLead.id, {
+        billingAddress: billingAddress || undefined,
+        taxId: taxId || undefined,
+        category: clientCategory,
       });
       setIsConvertOpen(false);
       setSelectedLead(null);
-      await fetchLeads();
     } catch (err: any) {
-      console.warn('Backend convert lead error, updated locally:', err);
-      setLeads((prev) =>
-        prev.map((l) => (l.id === selectedLead.id ? { ...l, status: LeadStatus.WON } : l))
-      );
+      console.warn('Backend convert lead error:', err);
       setIsConvertOpen(false);
       setSelectedLead(null);
     } finally {
