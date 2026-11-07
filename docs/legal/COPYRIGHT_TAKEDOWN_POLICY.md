@@ -60,3 +60,4 @@ Upon receipt of a valid counter-notice, Setsuzoku will forward a copy to the ori
 ## 5. Repeat Infringer Policy
 
 Setsuzoku maintains a strict policy to terminate accounts of users or organizations determined to be repeat copyright infringers.
+

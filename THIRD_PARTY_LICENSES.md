@@ -98,3 +98,4 @@ The Setsuzoku wordmark, stylized high-fiving figures device, Setsuzoku Media Lab
 ---
 
 For licensing queries or notifications: **info@setsuzoku.in**
+
