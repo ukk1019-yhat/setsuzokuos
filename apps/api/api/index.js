@@ -39414,12 +39414,23 @@ function createApp() {
 
 // src/index.ts
 var app = createApp();
-if (!process.env.VERCEL && typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
-  app.listen(ENV.PORT, () => {
-    console.log(`\u{1F680} [SETSUZOKU OS API] Server listening on port ${ENV.PORT}`);
-    console.log(`\u{1F517} REST Base: http://localhost:${ENV.PORT}/api/v1`);
-    console.log(`\u{1F49A} Health Check: http://localhost:${ENV.PORT}/health`);
-  });
+if (typeof require !== "undefined" && typeof module !== "undefined") {
+  const isMain = require.main === module;
+  const isService = Boolean(process.env.PORT && process.env.PORT !== "0");
+  const isTesting = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
+  if (!isTesting && (isMain || isService)) {
+    const port = process.env.PORT ? parseInt(process.env.PORT, 10) : ENV.PORT;
+    const server = app.listen(port, () => {
+      console.log(`\u{1F680} [SETSUZOKU OS API] Server listening on port ${port}`);
+      console.log(`\u{1F517} REST Base: http://localhost:${port}/api/v1`);
+      console.log(`\u{1F49A} Health Check: http://localhost:${port}/health`);
+    });
+    server.on("error", (err) => {
+      if (err.code !== "EADDRINUSE") {
+        console.error("[SETSUZOKU API Server Error]", err);
+      }
+    });
+  }
 }
 var src_default = app;
 // Annotate the CommonJS export names for ESM import in node:
