@@ -186,15 +186,23 @@ export const DashboardLayout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
         <header className="h-14 bg-white border-b border-brand-border flex items-center justify-between px-6 flex-shrink-0">
-          {/* Search bar */}
+          {/* Search bar & Environment indicator */}
           <div className="flex items-center gap-3">
-            <div className="relative w-80">
+            <div className="relative w-72 sm:w-80">
               <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" strokeWidth={1.75} />
               <input
                 type="text"
                 placeholder="Search leads, projects, clients, invoices..."
                 className="w-full pl-8 pr-3 py-1 text-[13px] bg-brand-bg border border-brand-border rounded focus:outline-none focus:border-brand-accent focus:bg-white transition"
               />
+            </div>
+
+            <div
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-amber-300/80 bg-amber-50 text-[11px] font-medium text-amber-900 select-none"
+              title="Demonstration environment with preloaded production workflows"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+              <span>Demo product</span>
             </div>
           </div>
 
