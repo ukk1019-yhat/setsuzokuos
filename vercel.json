@@ -1,35 +1,19 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "api": {
-      "root": "apps/api",
-      "framework": "express",
-      "entrypoint": "index.js",
-      "buildCommand": "pnpm run build"
-    },
-    "web": {
-      "root": "apps/web",
-      "framework": "vite"
-    }
-  },
+  "version": 2,
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "apps/web/dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": {
-        "service": "api"
-      }
+      "destination": "/api/index.js"
     },
     {
       "source": "/health",
-      "destination": {
-        "service": "api"
-      }
+      "destination": "/api/index.js"
     },
     {
-      "source": "/(.*)",
-      "destination": {
-        "service": "web"
-      }
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }

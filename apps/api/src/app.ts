@@ -72,7 +72,7 @@ export function createApp(): Application {
         ) {
           return callback(null, true);
         }
-        return callback(new Error(`Origin ${origin} not allowed by CORS security policy`));
+        return callback(null, false);
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -100,17 +100,37 @@ export function createApp(): Application {
     })
   );
 
-  // Health check endpoints (supports all path variants)
-  app.get(['/health', '/api/health', '/api/v1/health', '/v1/health'], (req, res) => {
-    res.status(200).json({
-      status: 'UP',
-      service: 'SETSUZOKU OS API',
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-    });
+  // 5. Vercel Serverless Function Path Normalization
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/api/index.js')) {
+      req.url = req.url.replace('/api/index.js', '') || '/';
+    } else if (req.url.startsWith('/api/index')) {
+      req.url = req.url.replace('/api/index', '') || '/';
+    }
+    next();
   });
 
-  // REST API v1 Routes (supports both /api/v1 and /v1 in case of rewrite stripping)
+  // Health check endpoints (supports all path variants)
+  app.get(
+    [
+      '/health',
+      '/api/health',
+      '/api/v1/health',
+      '/v1/health',
+      '/api/index.js/health',
+      '/api/index/health',
+    ],
+    (req, res) => {
+      res.status(200).json({
+        status: 'UP',
+        service: 'SETSUZOKU OS API',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  );
+
+  // REST API v1 Routes (supports /api/v1, /v1, /api, and root in case of rewrite stripping)
   const mountRoutes = (prefix: string) => {
     app.use(`${prefix}/auth`, authRouter);
     app.use(`${prefix}/organizations`, organizationRouter);
@@ -130,6 +150,8 @@ export function createApp(): Application {
 
   mountRoutes('/api/v1');
   mountRoutes('/v1');
+  mountRoutes('/api');
+  mountRoutes('');
 
   // 404 Handler - Default Deny
   app.use('*', (req, res) => {

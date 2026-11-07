@@ -39330,7 +39330,7 @@ function createApp() {
         if (allowedOrigins.includes(origin) || origin.endsWith(".setsuzoku.info") || origin.endsWith(".vercel.app")) {
           return callback(null, true);
         }
-        return callback(new Error(`Origin ${origin} not allowed by CORS security policy`));
+        return callback(null, false);
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -39353,14 +39353,32 @@ function createApp() {
       message: "Too many API requests from this client. Please throttle requests."
     })
   );
-  app2.get(["/health", "/api/health", "/api/v1/health", "/v1/health"], (req, res) => {
-    res.status(200).json({
-      status: "UP",
-      service: "SETSUZOKU OS API",
-      version: "1.0.0",
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    });
+  app2.use((req, res, next) => {
+    if (req.url.startsWith("/api/index.js")) {
+      req.url = req.url.replace("/api/index.js", "") || "/";
+    } else if (req.url.startsWith("/api/index")) {
+      req.url = req.url.replace("/api/index", "") || "/";
+    }
+    next();
   });
+  app2.get(
+    [
+      "/health",
+      "/api/health",
+      "/api/v1/health",
+      "/v1/health",
+      "/api/index.js/health",
+      "/api/index/health"
+    ],
+    (req, res) => {
+      res.status(200).json({
+        status: "UP",
+        service: "SETSUZOKU OS API",
+        version: "1.0.0",
+        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      });
+    }
+  );
   const mountRoutes = (prefix) => {
     app2.use(`${prefix}/auth`, authRouter);
     app2.use(`${prefix}/organizations`, organizationRouter);
@@ -39379,6 +39397,8 @@ function createApp() {
   };
   mountRoutes("/api/v1");
   mountRoutes("/v1");
+  mountRoutes("/api");
+  mountRoutes("");
   app2.use("*", (req, res) => {
     res.status(404).json({
       success: false,
@@ -39394,7 +39414,7 @@ function createApp() {
 
 // src/index.ts
 var app = createApp();
-if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
+if (!process.env.VERCEL && typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
   app.listen(ENV.PORT, () => {
     console.log(`\u{1F680} [SETSUZOKU OS API] Server listening on port ${ENV.PORT}`);
     console.log(`\u{1F517} REST Base: http://localhost:${ENV.PORT}/api/v1`);
@@ -39839,9 +39859,13 @@ bcryptjs/dist/bcrypt.js:
 */
 
 if (typeof module !== 'undefined' && module.exports) {
-  const handler = module.exports.default || module.exports;
-  module.exports = handler;
-  module.exports.default = handler;
-  module.exports.app = handler;
+  const rawApp = module.exports.default || module.exports.app || module.exports;
+  const serverlessHandler = (req, res) => {
+    return rawApp(req, res);
+  };
+  Object.assign(serverlessHandler, rawApp);
+  module.exports = serverlessHandler;
+  module.exports.default = serverlessHandler;
+  module.exports.app = rawApp;
 }
 

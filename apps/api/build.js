@@ -29,10 +29,14 @@ esbuild.buildSync({
   footer: {
     js: `
 if (typeof module !== 'undefined' && module.exports) {
-  const handler = module.exports.default || module.exports;
-  module.exports = handler;
-  module.exports.default = handler;
-  module.exports.app = handler;
+  const rawApp = module.exports.default || module.exports.app || module.exports;
+  const serverlessHandler = (req, res) => {
+    return rawApp(req, res);
+  };
+  Object.assign(serverlessHandler, rawApp);
+  module.exports = serverlessHandler;
+  module.exports.default = serverlessHandler;
+  module.exports.app = rawApp;
 }
 `,
   },
@@ -45,4 +49,8 @@ if (!fs.existsSync(rootApiDir)) {
 }
 fs.copyFileSync(appsApiOutfile, rootApiOutfile);
 
-console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js and api/index.js!');
+// Generate catch-all serverless function api/[...all].js for native Vercel routing
+const rootCatchAllFile = path.join(rootApiDir, '[...all].js');
+fs.writeFileSync(rootCatchAllFile, "module.exports = require('./index.js');\n");
+
+console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js, api/index.js, and api/[...all].js!');
