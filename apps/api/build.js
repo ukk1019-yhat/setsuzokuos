@@ -49,8 +49,16 @@ if (!fs.existsSync(rootApiDir)) {
 }
 fs.copyFileSync(appsApiOutfile, rootApiOutfile);
 
-// Generate catch-all serverless function api/[...all].js for native Vercel routing
+// Generate catch-all serverless function api/[...all].js for native Vercel routing at root
 const rootCatchAllFile = path.join(rootApiDir, '[...all].js');
 fs.writeFileSync(rootCatchAllFile, "module.exports = require('./index.js');\n");
+
+// Also generate apps/api/api/ for standalone api project deployment
+const appsApiSubdir = path.join(__dirname, 'api');
+if (!fs.existsSync(appsApiSubdir)) {
+  fs.mkdirSync(appsApiSubdir, { recursive: true });
+}
+fs.copyFileSync(appsApiOutfile, path.join(appsApiSubdir, 'index.js'));
+fs.writeFileSync(path.join(appsApiSubdir, '[...all].js'), "module.exports = require('../index.js');\n");
 
 console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js, api/index.js, and api/[...all].js!');

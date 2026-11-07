@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Setsuzoku Media Labs. All rights reserved.
+ */
 import { z } from 'zod';
 export declare enum MembershipRole {
     SUPER_ADMIN = "SUPER_ADMIN",

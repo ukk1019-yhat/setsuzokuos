@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateFileSchema = exports.RazorpayWebhookSchema = exports.RazorpayCreateOrderSchema = exports.RecordPaymentSchema = exports.UpdateInvoiceSchema = exports.CreateInvoiceSchema = exports.InvoiceItemInputSchema = exports.DecideApprovalSchema = exports.SubmitDeliverableVersionSchema = exports.CreateDeliverableSchema = exports.CreateSubtaskSchema = exports.CreateTaskCommentSchema = exports.UpdateTaskSchema = exports.CreateTaskSchema = exports.UpdateMilestoneSchema = exports.CreateMilestoneSchema = exports.ConvertQuotationToProjectSchema = exports.UpdateProjectSchema = exports.CreateProjectSchema = exports.UpdateQuotationSchema = exports.CreateQuotationSchema = exports.QuotationItemInputSchema = exports.UpdateClientSchema = exports.CreateClientSchema = exports.ConvertLeadToClientSchema = exports.CreateLeadActivitySchema = exports.PublicLeadIntakeSchema = exports.UpdateLeadSchema = exports.CreateLeadSchema = exports.UpdateMemberRoleSchema = exports.InviteMemberSchema = exports.UpdateOrganizationSchema = exports.CreateOrganizationSchema = exports.LoginSchema = exports.RegisterSchema = exports.ROLE_PERMISSIONS = exports.PaymentStatus = exports.PaymentMethod = exports.InvoiceStatus = exports.ApprovalDecision = exports.DeliverableStatus = exports.TaskStatus = exports.ProjectStatus = exports.LeadActivityType = exports.QuotationStatus = exports.Priority = exports.LeadStatus = exports.MembershipRole = void 0;
 exports.hasPermission = hasPermission;
+/**
+ * Copyright (c) 2026 Setsuzoku Media Labs. All rights reserved.
+ */
 const zod_1 = require("zod");
 // ==========================================
 // 1. RBAC ROLES & PERMISSIONS
