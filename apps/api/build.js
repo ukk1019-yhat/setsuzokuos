@@ -61,4 +61,15 @@ if (!fs.existsSync(appsApiSubdir)) {
 fs.copyFileSync(appsApiOutfile, path.join(appsApiSubdir, 'index.js'));
 fs.writeFileSync(path.join(appsApiSubdir, '[...all].js'), "module.exports = require('../index.js');\n");
 
-console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js, api/index.js, and api/[...all].js!');
+// Also generate apps/web/api/ for standalone web project deployment
+const appsWebDir = path.join(__dirname, '../web');
+const appsWebApiDir = path.join(appsWebDir, 'api');
+if (fs.existsSync(appsWebDir)) {
+  if (!fs.existsSync(appsWebApiDir)) {
+    fs.mkdirSync(appsWebApiDir, { recursive: true });
+  }
+  fs.copyFileSync(appsApiOutfile, path.join(appsWebApiDir, 'index.js'));
+  fs.writeFileSync(path.join(appsWebApiDir, '[...all].js'), "module.exports = require('./index.js');\n");
+}
+
+console.log('[SETSUZOKU BUILD] Successfully bundled apps/api/index.js, api/index.js, api/[...all].js, and apps/web/api/index.js!');
