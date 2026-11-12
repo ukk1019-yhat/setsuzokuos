@@ -13,6 +13,9 @@ import {
   PaymentStatus,
 } from '@setsuzoku/shared';
 import crypto from 'crypto';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
 export interface UserRecord {
   id: string;
@@ -370,9 +373,76 @@ export class DatabaseRepository {
   public paymentWebhookEvents: Map<string, PaymentWebhookEventRecord> = new Map();
   public notifications: Map<string, NotificationRecord> = new Map();
   public files: Map<string, FileRecord> = new Map();
+  private websiteTotalViews: number = 0;
+  private websiteVisitorIds: Set<string> = new Set();
+  private readonly viewsStorePath = path.join(os.tmpdir(), 'setsuzoku_website_views.json');
 
   constructor() {
     this.seedDefaultData();
+    this.loadWebsiteViews();
+  }
+
+  private isTestEnv(): boolean {
+    return process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
+  }
+
+  private loadWebsiteViews(): void {
+    if (this.isTestEnv()) return;
+    try {
+      if (fs.existsSync(this.viewsStorePath)) {
+        const raw = fs.readFileSync(this.viewsStorePath, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (typeof parsed?.totalViews === 'number' && parsed.totalViews >= 0) {
+          this.websiteTotalViews = Math.floor(parsed.totalViews);
+        }
+        if (Array.isArray(parsed?.visitorIds)) {
+          this.websiteVisitorIds = new Set(
+            parsed.visitorIds.filter((id: unknown) => typeof id === 'string')
+          );
+        }
+      }
+    } catch {
+      // Ignore read errors if /tmp is unavailable
+    }
+  }
+
+  private saveWebsiteViews(): void {
+    if (this.isTestEnv()) return;
+    try {
+      fs.writeFileSync(
+        this.viewsStorePath,
+        JSON.stringify({
+          totalViews: this.websiteTotalViews,
+          visitorIds: Array.from(this.websiteVisitorIds).slice(-5000),
+          updatedAt: new Date().toISOString(),
+        }),
+        'utf8'
+      );
+    } catch {
+      // Ignore write errors in read-only filesystems
+    }
+  }
+
+  public recordWebsiteView(visitorId?: string): { totalViews: number; uniqueVisitors: number } {
+    this.websiteTotalViews += 1;
+    if (visitorId && visitorId.trim().length > 0) {
+      // Store an HMAC-hashed fingerprint so raw visitor IDs are not kept in logs/files
+      const hashedId = crypto
+        .createHash('sha256')
+        .update(visitorId.trim())
+        .digest('hex')
+        .slice(0, 24);
+      this.websiteVisitorIds.add(hashedId);
+    }
+    this.saveWebsiteViews();
+    return this.getWebsiteViews();
+  }
+
+  public getWebsiteViews(): { totalViews: number; uniqueVisitors: number } {
+    return {
+      totalViews: this.websiteTotalViews,
+      uniqueVisitors: this.websiteVisitorIds.size,
+    };
   }
 
   public clear(): void {
@@ -398,6 +468,8 @@ export class DatabaseRepository {
     this.invoiceItems.clear();
     this.payments.clear();
     this.paymentWebhookEvents.clear();
+    this.websiteTotalViews = 0;
+    this.websiteVisitorIds.clear();
   }
 
   public seedDefaultData(): void {

@@ -20,6 +20,7 @@ import { invoicesRouter } from './modules/invoices/invoices.controller';
 import { paymentsRouter } from './modules/payments/payments.controller';
 import { reportsRouter } from './modules/reports/reports.controller';
 import { privacyRouter } from './modules/privacy/privacy.controller';
+import { analyticsRouter } from './modules/analytics/analytics.controller';
 import { errorMiddleware } from './middleware/error.middleware';
 import { securityRateLimiter } from './middleware/rate-limiter.middleware';
 
@@ -146,6 +147,7 @@ export function createApp(): Application {
     app.use(`${prefix}/payments`, paymentsRouter);
     app.use(`${prefix}/reports`, reportsRouter);
     app.use(`${prefix}/privacy`, privacyRouter);
+    app.use(`${prefix}/analytics`, analyticsRouter);
   };
 
   mountRoutes('/api/v1');

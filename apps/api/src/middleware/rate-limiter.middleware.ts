@@ -148,3 +148,10 @@ export const publicLeadIntakeRateLimiter = securityRateLimiter.limit({
   max: 20,
   message: 'Rate limit reached for public inquiries. Please try again later or contact info@setsuzoku.in.',
 });
+
+export const publicViewRateLimiter = securityRateLimiter.limit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: (req) => `views:${req.ip || req.socket.remoteAddress || 'unknown'}`,
+  message: 'Too many view tracking requests. Please slow down.',
+});

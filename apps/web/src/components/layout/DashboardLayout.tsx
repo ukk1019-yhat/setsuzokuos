@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { apiRequest } from '../../api/client';
 import {
   LayoutDashboard,
   Users,
@@ -19,6 +20,7 @@ import {
   ExternalLink,
   Mail,
   RotateCcw,
+  Eye,
 } from 'lucide-react';
 import { MembershipRole } from '@setsuzoku/shared';
 import { Logo } from '../common/Logo';
@@ -26,6 +28,78 @@ import { Logo } from '../common/Logo';
 export const DashboardLayout: React.FC = () => {
   const { user, currentOrg, currentRole, switchRole, logout } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [viewsStats, setViewsStats] = useState<{
+    totalViews: number;
+    uniqueVisitors: number;
+  } | null>(() => {
+    try {
+      const cached = localStorage.getItem('setsuzoku_website_views_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (typeof parsed?.totalViews === 'number') return parsed;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return null;
+  });
+  const hasRecordedViewRef = useRef(false);
+
+  useEffect(() => {
+    if (hasRecordedViewRef.current) return;
+    hasRecordedViewRef.current = true;
+
+    const recordWebsiteView = async () => {
+      let visitorId = '';
+      try {
+        visitorId = localStorage.getItem('setsuzoku_visitor_id') || '';
+        if (!visitorId) {
+          visitorId =
+            typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+              ? crypto.randomUUID()
+              : `v_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+          localStorage.setItem('setsuzoku_visitor_id', visitorId);
+        }
+      } catch {
+        visitorId = '';
+      }
+
+      try {
+        const stats = await apiRequest<{ totalViews: number; uniqueVisitors: number }>(
+          '/analytics/views',
+          {
+            method: 'POST',
+            body: JSON.stringify(visitorId ? { visitorId } : {}),
+          }
+        );
+        if (stats && typeof stats.totalViews === 'number') {
+          setViewsStats(stats);
+          try {
+            localStorage.setItem('setsuzoku_website_views_cache', JSON.stringify(stats));
+          } catch {
+            // ignore storage errors
+          }
+        }
+      } catch {
+        // Fallback when running offline without API
+        try {
+          const cached = localStorage.getItem('setsuzoku_website_views_cache');
+          const prev = cached ? JSON.parse(cached) : null;
+          const fallbackStats = {
+            totalViews: (typeof prev?.totalViews === 'number' ? prev.totalViews : 0) + 1,
+            uniqueVisitors: typeof prev?.uniqueVisitors === 'number' && prev.uniqueVisitors > 0 ? prev.uniqueVisitors : 1,
+          };
+          setViewsStats(fallbackStats);
+          localStorage.setItem('setsuzoku_website_views_cache', JSON.stringify(fallbackStats));
+        } catch {
+          // ignore storage errors
+        }
+      }
+    };
+
+    recordWebsiteView();
+  }, []);
+
   const [unreadNotifications, setUnreadNotifications] = useState([
     {
       id: '1',
@@ -220,6 +294,25 @@ export const DashboardLayout: React.FC = () => {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
               <span>Demo product</span>
+            </div>
+
+            <div
+              data-testid="website-views-badge"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-brand-bg text-[11px] font-medium text-brand-text select-none tabular-nums"
+              title={
+                viewsStats
+                  ? `${viewsStats.totalViews.toLocaleString('en-IN')} total website views (${viewsStats.uniqueVisitors.toLocaleString('en-IN')} unique visitors)`
+                  : 'Total website views'
+              }
+            >
+              <Eye className="w-3.5 h-3.5 text-brand-accent" strokeWidth={1.75} />
+              <span>
+                {viewsStats !== null
+                  ? `${viewsStats.totalViews.toLocaleString('en-IN')} ${
+                      viewsStats.totalViews === 1 ? 'view' : 'views'
+                    }`
+                  : '— views'}
+              </span>
             </div>
           </div>
 
