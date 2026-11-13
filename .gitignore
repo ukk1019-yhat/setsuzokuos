@@ -9,6 +9,8 @@ build/
 coverage/
 .DS_Store
 Thumbs.db
+.kilo/
+
 
 # Track precompiled shared and API packages for reliable Vercel serverless deployment
 !packages/shared/dist/

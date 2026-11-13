@@ -1,154 +1,258 @@
-# SETSUZOKU OS (接続 OS)
-> **Tagline:** *From First Inquiry to Final Payment*  
-> **Corporate Website:** [https://setsuzoku.info](https://setsuzoku.info) &bull; **Live App:** [https://setsuzokuos.vercel.app](https://setsuzokuos.vercel.app)  
-> **Mission:** A unified multi-tenant operating system for small and medium-sized service businesses (agencies, creative studios, IT firms, and consultancies).
+<div align="center">
+
+  <img src="brand/assets/setsuzoku-logo.png" alt="SETSUZOKU OS Logo" width="140" height="140" style="border-radius: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+
+  # SETSUZOKU OS (接続 OS)
+
+  <p align="center">
+    <strong>From First Inquiry to Final Payment.</strong><br/>
+    <em>The unified multi-tenant operating system built for modern service agencies, IT firms, creative studios, and consultancies.</em>
+  </p>
+
+  <p align="center">
+    <a href="https://setsuzokuos.vercel.app"><img src="https://img.shields.io/badge/Live_App-setsuzokuos.vercel.app-13A89E?style=for-the-badge&logo=vercel&logoColor=white" alt="Live App" /></a>
+    <a href="https://setsuzoku.info"><img src="https://img.shields.io/badge/Website-setsuzoku.info-142B3A?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
+    <img src="https://img.shields.io/badge/Version-v1.0.0-teal?style=for-the-badge" alt="Version 1.0.0" />
+    <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License MIT" />
+  </p>
+
+  <p align="center">
+    <img src="https://img.shields.io/badge/TypeScript-5.4-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 18" />
+    <img src="https://img.shields.io/badge/Vite-5.0-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
+    <img src="https://img.shields.io/badge/Prisma-5.0-2D3748?style=flat-square&logo=prisma&logoColor=white" alt="Prisma" />
+    <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  </p>
+
+  <h3>
+    <a href="https://setsuzokuos.vercel.app">Launch App</a>
+    <span> &bull; </span>
+    <a href="#-system-architecture">Architecture</a>
+    <span> &bull; </span>
+    <a href="#-quick-start">Quick Start</a>
+    <span> &bull; </span>
+    <a href="docs/API_DOCUMENTATION.md">API Docs</a>
+    <span> &bull; </span>
+    <a href="docs/PRD.md">Product Specs</a>
+  </h3>
+
+</div>
 
 ---
 
-## 1. Project Overview
+## 🎯 Executive Overview
 
-SETSUZOKU OS connects the entire customer journey in an audit-trailed workflow:
+**SETSUZOKU OS** eliminates enterprise tool fragmentation by unifying CRM, Quotations, Project Management, Client Review Portals, and Invoicing into an audit-trailed, single-pane operating system.
 
-$$\text{Inquiry} \longrightarrow \text{Lead} \longrightarrow \text{Client} \longrightarrow \text{Quotation} \longrightarrow \text{Project} \longrightarrow \text{Tasks} \longrightarrow \text{Deliverable} \longrightarrow \text{Approval} \longrightarrow \text{Invoice} \longrightarrow \text{Verified Payment}$$
+### 🔄 The Continuous Customer Journey
 
-### Key Value Propositions
-- **Eliminate Tool Fragmentation:** Combines CRM, Proposals, Task Management, Client Portal, Approvals, and Invoicing into one system.
-- **Decimal-Safe Financial Engine:** All currency calculations use exact `Decimal(12, 2)` arithmetic—zero floating-point inaccuracies.
-- **Strict Multi-Tenant Isolation:** Row-level tenant foreign keys enforced by authentication and authorization guards.
-- **Client Sign-off State Machine:** Deliverables have immutable version histories (`v1.0`, `v1.1`, `v2.0`) with logged approval decisions.
+```mermaid
+flowchart LR
+    A["📥 Web Inquiry"] --> B["🎯 Lead Pipeline (Kanban)"]
+    B --> C["🤝 Client Dossier"]
+    C --> D["📑 Quotation (Decimal Safe)"]
+    D --> E["📁 Project Spawned"]
+    E --> F["✅ Tasks & Checklists"]
+    F --> G["📦 Deliverables (v1.0, v2.0)"]
+    G --> H["✍️ Client Sign-Off"]
+    H --> I["💳 Invoicing & Settlement"]
+
+    style A fill:#142B3A,stroke:#13A89E,stroke-width:2px,color:#fff
+    style D fill:#142B3A,stroke:#13A89E,stroke-width:2px,color:#fff
+    style G fill:#142B3A,stroke:#13A89E,stroke-width:2px,color:#fff
+    style H fill:#142B3A,stroke:#13A89E,stroke-width:2px,color:#fff
+    style I fill:#13A89E,stroke:#142B3A,stroke-width:2px,color:#fff
+```
 
 ---
 
-## 2. Monorepo Repository Structure
+## ✨ Core Pillars & Differentiators
+
+| Pillar | Capability | Technical Guarantee |
+| :--- | :--- | :--- |
+| 🪙 **Decimal-Safe Financial Engine** | Server-side monetary arithmetic for quotations, tax rates, and line items. | Enforces PostgreSQL `Decimal(12, 2)` across all calculations—eliminating floating-point inaccuracies. |
+| 🏢 **Ironclad Multi-Tenancy** | Strict tenant scoping across every query and entity. | Row-level tenant foreign keys enforced by authentication middleware and `TenantGuard` (`X-Organization-Id`). |
+| 🛡️ **7-Tier Granular RBAC** | Role hierarchy: `SUPER_ADMIN`, `ORGANIZATION_OWNER`, `ADMIN`, `MANAGER`, `EMPLOYEE`, `FINANCE`, `CLIENT`. | Guarded at route decorators with active safeguards against deleting or demoting sole owners. |
+| 🔄 **Client Sign-Off State Machine** | Multi-version deliverable history (`v1`, `v2`, `v3`...) with immutable audit trails. | Approved deliverables cannot be overwritten without an explicit new version increment. |
+| 🌐 **Dedicated Client Portal (`/portal`)** | Isolated, branded portal where external clients review deliverables and approve proposals. | Strict data isolation prevents access to internal team tasks, discussions, and margins. |
+
+---
+
+## 🏗️ System Architecture
+
+SETSUZOKU OS is engineered as a high-performance modular monolith inside a clean `pnpm` monorepo:
+
+```mermaid
+graph TD
+    Client["🌐 Web App (React 18 + Vite + Tailwind)"] -->|JWT + X-Organization-Id| APIGateway["🚀 Express API Service"]
+    
+    subgraph Security & Access Layer
+      APIGateway --> AuthGuard["AuthGuard (JWT Verification)"]
+      AuthGuard --> TenantGuard["TenantGuard (Org Scoping)"]
+      TenantGuard --> RbacGuard["RbacGuard (7-Tier Permissions)"]
+    end
+
+    subgraph Core Functional Modules
+      RbacGuard --> CRM["CRM & Leads Module"]
+      RbacGuard --> Quotes["Quotations & Pricing Engine"]
+      RbacGuard --> Projects["Project & Task Manager"]
+      RbacGuard --> Portal["Client Sign-Off Portal"]
+    end
+
+    subgraph Data & Storage Engine
+      CRM --> PrismaORM["Prisma ORM 5 (Resilient Repository Layer)"]
+      Quotes --> PrismaORM
+      Projects --> PrismaORM
+      Portal --> PrismaORM
+      PrismaORM --> Postgres[("🐘 PostgreSQL 16 (28 Relational Models)")]
+    end
+```
+
+---
+
+## 📁 Repository Structure
 
 ```
 setsuzoku-os/
 ├── apps/
-│   ├── api/                 # REST API service (Express/TypeScript, JWT, RBAC guards)
-│   │   ├── src/
-│   │   │   ├── config/      # Environment configuration
-│   │   │   ├── middleware/  # AuthGuard, TenantGuard, RbacGuard, ErrorMiddleware
-│   │   │   ├── modules/     # Auth, Organizations, Members & RBAC
-│   │   │   └── storage/     # Resilient Database Repository with Prisma integration
-│   │   └── tests/           # Vitest integration tests (Auth, Orgs, RBAC)
-│   └── web/                 # Frontend (React 18 + Vite + Tailwind CSS + TanStack Query)
-│       ├── src/
-│       │   ├── api/         # Typed API Client with JWT & Tenant injection
-│       │   ├── components/  # Buttons, Inputs, Cards, Badges, Modals, Shell Layouts
-│       │   ├── context/     # AuthProvider & Organization Switcher state
-│       │   └── pages/       # Login, Register, Onboarding, Dashboard, Team, Settings
+│   ├── api/                 # Node.js/Express REST API (JWT, RBAC & Tenant Guards)
+│   └── web/                 # React 18 SPA (Vite, Tailwind CSS, TanStack Query)
 ├── packages/
 │   ├── database/            # PostgreSQL Prisma schema (28 models), Migrations & Client
-│   │   └── prisma/
-│   │       └── schema.prisma # Full relational schema with @db.Decimal(12,2)
 │   └── shared/              # Shared Zod schemas, RBAC enums, DTOs & Permissions
-├── docs/
+├── brand/                   # Official brand guidelines, logos & icon assets
+├── docs/                    # Exhaustive specifications & engineering docs
 │   ├── PRD.md               # Product Requirements Document
-│   ├── SYSTEM_ARCHITECTURE.md # Modular Monolith Architecture
-│   ├── DATABASE_ERD.md      # Mermaid ER Diagram & Relational Rules
-│   ├── API_DOCUMENTATION.md # Versioned REST Endpoints (/api/v1/...)
-│   ├── FRONTEND_ARCHITECTURE.md # Route Tree & Component Hierarchy
-│   ├── AUTH_AND_RBAC.md     # 7 Roles & Permission Matrix
-│   └── MILESTONES_AND_RISKS.md  # 5 Development Phases & Technical Risks
+│   ├── SYSTEM_ARCHITECTURE.md # Architecture deep-dive
+│   ├── DATABASE_ERD.md      # Relational Schema & Mermaid ER Diagram
+│   ├── API_DOCUMENTATION.md # Complete REST API Reference (/api/v1/...)
+│   └── AUTH_AND_RBAC.md     # 7 Roles & Permission Matrix
 └── README.md
 ```
 
 ---
 
-## 3. Technology Stack
-
-- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, Lucide React, React Router 6, TanStack Query.
-- **Backend:** Node.js, Express / NestJS architecture, TypeScript, Zod, Bcrypt / Argon2id, JWT.
-- **Database:** PostgreSQL 16+, Prisma ORM 5.
-- **Design Tokens:** Deep Navy (`#142B3A`), Vibrant Teal (`#13A89E`), Cool Gray (`#F7F9FB`), Surface White (`#FFFFFF`).
-
----
-
-## 4. Implementation Status
-
-### Phase 1: Foundation, Multi-Tenant Auth & RBAC
-- [x] **Complete Specifications & Architecture:** PRD, ERD, API contracts, RBAC matrix, and risk mitigation documented in `/docs`.
-- [x] **PostgreSQL Prisma Schema:** 28 normalized models, strict relational foreign keys, cascade policies, indexes, and `Decimal(12, 2)` monetary columns.
-- [x] **Authentication Module:** User registration, password hashing, JWT generation, session retrieval (`/api/v1/auth/*`).
-- [x] **Organization & Tenancy:** Business onboarding wizard, tenant-scoping guard (`X-Organization-Id`), organization switching (`/api/v1/organizations/*`).
-- [x] **Role-Based Access Control (RBAC):** Seven roles (`SUPER_ADMIN`, `ORGANIZATION_OWNER`, `ADMIN`, `MANAGER`, `EMPLOYEE`, `FINANCE`, `CLIENT`), member invitation, permission decorators, and protection against demoting or deleting sole owners.
-- [x] **Responsive Enterprise Frontend:** Connected Login, Register, Multi-step Onboarding, Main Dashboard Overview, Team & RBAC Management, and Settings.
-
-### Phase 2: CRM & Sales Lifecycle
-- [x] **Lead Management System:**
-  - Public web intake form embed endpoint (`POST /api/v1/leads/intake`) with organization slug resolution.
-  - Interactive 7-stage Kanban pipeline (`New`, `Contacted`, `Qualified`, `Proposal Sent`, `Negotiation`, `Won`, `Lost`).
-  - Data table view with live search, priority indicators, and estimated budget columns.
-  - Activity history stream (calls, notes, emails, and automatic status transition logs).
-  - 1-click conversion from won lead to formal Client entity preserving history and linkages.
-- [x] **Customer Management (Clients):**
-  - Customer profile directory with tax identification (GSTIN/EIN) and billing addresses.
-  - 360° Client Dossier tracking linked quotations, active projects, and financial totals.
-- [x] **Quotations & Proposals Engine:**
-  - Server-side decimal-safe pricing calculations (zero floating-point errors).
-  - Dynamic multi-service line item builder with quantities, unit prices, discounts, and taxes.
-  - Lifecycle state machine: `DRAFT` $\rightarrow$ `SENT` $\rightarrow$ `ACCEPTED`.
-  - Audit logging of formal client acceptance.
-
-### Phase 3: Project Execution & Client Portal (Completed)
-- [x] **Project Management Operations:**
-  - 1-Click spawn project from accepted quotations, auto-populating milestones & deliverables from quotation items.
-  - Project code generation (`PRJ-YYYY-XXX`), budget tracking, and real-time completion percentage calculations.
-  - Project detail drawer displaying milestones schedule, tasks list, and deliverable review status.
-- [x] **Task Management System:**
-  - Filter tabs for `All Tasks`, `My Tasks`, `In Progress`, and `Completed`.
-  - Subtask checklist decomposition with interactive toggle.
-  - Collaborative task discussion comment thread.
-- [x] **Deliverables & Approval Workflow:**
-  - Multi-version deliverable history (`v1`, `v2`, `v3`...) with changelog notes.
-  - Formal client sign-off state machine (`Pending Client Approval` $\rightarrow$ `Approved` / `Revision Requested`).
-  - Protection: Never overwrites approved versions without an explicit new version increment.
-- [x] **Dedicated Client Portal (`/portal`):**
-  - Isolated client interface displaying only the client's own projects and quotations.
-  - Review cards for pending deliverables with direct "Approve" or "Request Revision" feedback actions.
-- [x] **Automated Test Suite:** 27 comprehensive integration tests passing with 100% green status.
-
----
-
-## 5. Getting Started & Development
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 20+ / 25+
-- pnpm 11+
+- **Node.js**: $\ge 20.0.0$ (v20+ or v25+ recommended)
+- **Package Manager**: `pnpm` ($\ge 9.0.0$)
+- **Database**: PostgreSQL 16+ (or Supabase / Neon / Docker container)
 
-### Installation
+### 1. Clone & Install
+
 ```bash
-# 1. Install all dependencies across the workspace
+# Clone the repository
+git clone https://github.com/ukk1019-yhat/setsuzokuos.git
+cd setsuzokuos
+
+# Install workspace dependencies
 pnpm install
+```
 
-# 2. Build shared packages and database client
+### 2. Configure Environment
+
+Copy `.env.example` in both backend and frontend applications:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+### 3. Build Shared Packages & Prisma Client
+
+```bash
+# Build shared types and contracts
 pnpm --filter @setsuzoku/shared run build
-pnpm --filter @setsuzoku/database run build
 
-# 3. Generate Prisma client
+# Generate Prisma Client & compile database package
+pnpm --filter @setsuzoku/database run build
 pnpm --filter @setsuzoku/database exec prisma generate --schema=prisma/schema.prisma
 ```
 
-### Running Tests
+### 4. Start Local Development
+
+Launch both API server (port 4000) and Web Frontend (port 3000) concurrently:
+
 ```bash
-pnpm --filter @setsuzoku/api run test
+pnpm dev
 ```
 
-### Running the Application Locally
-```bash
-# Terminal 1: Start Backend API (Port 4000)
-pnpm --filter @setsuzoku/api run dev
-
-# Terminal 2: Start Frontend Web Application (Port 3000)
-pnpm --filter @setsuzoku/web run dev
-```
-
-Visit `http://localhost:3000` to access the application.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-### Official Channels
-- **Main Website:** [https://setsuzoku.info](https://setsuzoku.info)
-- **Production Platform:** [https://setsuzokuos.vercel.app](https://setsuzokuos.vercel.app)
-- **Direct Desk:** [info@setsuzoku.in](mailto:info@setsuzoku.in)
-- **Legal Entity:** Setsuzoku Media Labs Private Limited (Republic of India)
+## 🧪 Testing & Verification
+
+Run the full automated test suite (including multi-tenant isolation and RBAC checks):
+
+```bash
+# Run tests across all packages
+pnpm test
+
+# Target API test suite with Vitest
+pnpm --filter @setsuzoku/api run test
+```
+
+---
+
+## 📚 Deep Dive Documentation
+
+<details>
+  <summary><strong>🔐 Click to expand 7-Tier RBAC Permission Structure</strong></summary>
+
+| Role | Scope & Permissions |
+| :--- | :--- |
+| `SUPER_ADMIN` | Platform-wide administration and global metrics. |
+| `ORGANIZATION_OWNER` | Complete organization ownership, billing, legal profile, and member management. Protected against demotion. |
+| `ADMIN` | Organization configuration, team invites, and workflow defaults. |
+| `MANAGER` | Project allocations, task assignments, lead stage progression, and deliverables dispatch. |
+| `EMPLOYEE` | Task execution, checklist updates, deliverable submissions, and internal discussions. |
+| `FINANCE` | Quotations management, tax profile, invoice issuance, and payment verification. |
+| `CLIENT` | External client portal access (`/portal`): quotation approvals, deliverable sign-offs, and revision feedback. |
+
+</details>
+
+<details>
+  <summary><strong>🗄️ Click to expand Database Model & Schema Architecture</strong></summary>
+
+The PostgreSQL database is normalized into 28 models across five core domains:
+1. **Tenancy & Auth:** `User`, `Organization`, `OrganizationMember`, `Session`, `AuditLog`.
+2. **CRM & Intake:** `Lead`, `LeadActivity`, `LeadStageTransition`, `ClientProfile`.
+3. **Financials & Estimates:** `Quotation`, `QuotationItem`, `TaxProfile`, `PaymentTerm`.
+4. **Operations & Delivery:** `Project`, `ProjectMilestone`, `Task`, `TaskComment`, `Subtask`.
+5. **Quality & Approvals:** `Deliverable`, `DeliverableVersion`, `ClientApprovalDecision`.
+
+All monetary amounts utilize `@db.Decimal(12, 2)` to guarantee mathematical exactness.
+
+</details>
+
+---
+
+## 🗺️ Roadmap & Phase Status
+
+- [x] **Phase 1: Foundation, Multi-Tenant Auth & RBAC** (Complete)
+- [x] **Phase 2: CRM, Leads Pipeline & Quotations Engine** (Complete)
+- [x] **Phase 3: Project Execution, Task Engine & Dedicated Client Portal** (Complete)
+- [ ] **Phase 4: Invoicing, Automated Ledger & Tax Invoices (GST/VAT)** (In Progress)
+- [ ] **Phase 5: Automated Payment Gateway Webhooks & Analytics** (Planned)
+
+---
+
+## 🏢 Corporate Entity & Support
+
+- **Corporate Website:** [https://setsuzoku.info](https://setsuzoku.info)
+- **Live Platform:** [https://setsuzokuos.vercel.app](https://setsuzokuos.vercel.app)
+- **Official Desk:** [info@setsuzoku.in](mailto:info@setsuzoku.in)
+- **Company:** Setsuzoku Media Labs Private Limited (Republic of India)
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for full details.
+
+<div align="center">
+  <sub>Built with precision by <strong>Setsuzoku Media Labs</strong></sub>
+</div>
