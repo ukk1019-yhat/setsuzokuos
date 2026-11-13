@@ -738,7 +738,7 @@ export const InvoicesPage: React.FC = () => {
             </div>
 
             {/* Client Info */}
-            <div className="py-5 border-b border-slate-100 grid grid-cols-2 gap-4 text-xs">
+            <div className="py-5 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Billed To:</span>
                 <div className="font-bold text-brand-navy text-sm mt-1">{previewInvoice.client?.name}</div>
@@ -751,7 +751,7 @@ export const InvoicesPage: React.FC = () => {
                   <div className="text-[11px] font-mono text-slate-600 mt-1">Tax ID: {previewInvoice.client.taxId}</div>
                 )}
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Issued By:</span>
                 <div className="font-bold text-brand-navy text-sm mt-1">{currentOrg?.name}</div>
                 <a href="mailto:info@setsuzoku.in" className="text-brand-teal font-medium hover:underline block">
@@ -762,8 +762,8 @@ export const InvoicesPage: React.FC = () => {
             </div>
 
             {/* Line Items Table */}
-            <div className="py-6">
-              <table className="w-full text-left text-xs">
+            <div className="py-6 overflow-x-auto">
+              <table className="min-w-[440px] w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
                     <th className="py-2">Description</th>

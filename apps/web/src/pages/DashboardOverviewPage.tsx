@@ -233,21 +233,21 @@ export const DashboardOverviewPage: React.FC = () => {
         </div>
 
         {/* Exactly two summary numbers */}
-        <div className="flex items-center gap-8 divide-x divide-brand-border">
-          <div>
+        <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-4 sm:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-brand-border pt-1 sm:pt-0">
+          <div className="pt-1 sm:pt-0">
             <div className="text-[11px] font-medium text-brand-muted uppercase tracking-wider">
               Uncollected receivables
             </div>
-            <div className="text-xl font-bold text-brand-text tabular-nums font-mono mt-0.5 text-right sm:text-left">
+            <div className="text-lg sm:text-xl font-bold text-brand-text tabular-nums font-mono mt-0.5">
               {formatINR(totalUncollectedReceivables)}
             </div>
           </div>
 
-          <div className="pl-8">
+          <div className="pt-2 sm:pt-0 sm:pl-8">
             <div className="text-[11px] font-medium text-brand-muted uppercase tracking-wider">
               Action items
             </div>
-            <div className="text-xl font-bold text-brand-text tabular-nums font-mono mt-0.5 text-right sm:text-left">
+            <div className="text-lg sm:text-xl font-bold text-brand-text tabular-nums font-mono mt-0.5">
               {totalActionItemsCount}{' '}
               <span className="text-xs font-normal text-brand-muted font-sans">requiring action</span>
             </div>

@@ -197,7 +197,7 @@ export const ReportsPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
             <div className="p-4 bg-slate-50 rounded-xl">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Leads</span>
               <p className="text-2xl font-bold text-brand-navy mt-1">{report?.leadsMetrics.total || 0}</p>

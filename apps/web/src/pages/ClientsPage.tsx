@@ -211,7 +211,7 @@ export const ClientsPage: React.FC = () => {
         >
           <div className="space-y-6">
             {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
               <div>
                 <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider block">Total Quotations</span>
                 <span className="text-lg font-bold text-brand-navy">{selectedClient.stats?.totalQuotations || 0}</span>
@@ -229,7 +229,7 @@ export const ClientsPage: React.FC = () => {
             </div>
 
             {/* Profile Information */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-2">
                 <div>
                   <span className="text-brand-muted block text-[10px] uppercase font-bold tracking-wider">Email Address</span>
@@ -317,7 +317,7 @@ export const ClientsPage: React.FC = () => {
         subtitle="Create dedicated customer record in CRM"
       >
         <form onSubmit={handleCreateClient} className="space-y-3.5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Contact Person Name *"
               required
@@ -333,7 +333,7 @@ export const ClientsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Official Email *"
               type="email"
@@ -357,7 +357,7 @@ export const ClientsPage: React.FC = () => {
             placeholder="Office 402, Financial Tower, Mumbai"
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Tax / GST Number"
               value={taxId}

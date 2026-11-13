@@ -261,7 +261,7 @@ export const ProjectsPage: React.FC = () => {
         >
           <div className="space-y-6">
             {/* Top metrics bar */}
-            <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center text-xs">
               <div>
                 <span className="text-[10px] uppercase font-bold text-brand-muted tracking-wider block">Budget Allocated</span>
                 <span className="text-base font-bold text-brand-navy">
@@ -405,7 +405,7 @@ export const ProjectsPage: React.FC = () => {
             placeholder="e.g. Q4 Brand Commercial Film"
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-brand-text mb-1 uppercase tracking-wide">
                 Client *

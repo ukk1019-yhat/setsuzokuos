@@ -393,7 +393,7 @@ export const ClientPortalPage: React.FC = () => {
               <label className="block text-xs font-semibold text-brand-text mb-1 uppercase tracking-wide">
                 Your Decision *
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setDecision(ApprovalDecision.APPROVED)}

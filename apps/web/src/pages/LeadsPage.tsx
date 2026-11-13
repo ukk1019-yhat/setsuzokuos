@@ -462,7 +462,7 @@ export const LeadsPage: React.FC = () => {
             </div>
 
             {/* Profile Information */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-2">
                 <div>
                   <span className="text-brand-muted block text-[10px] uppercase font-bold tracking-wider">Contact Person</span>
@@ -626,7 +626,7 @@ export const LeadsPage: React.FC = () => {
             placeholder="e.g. Website Overhaul & SEO"
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Contact Name *"
               required
@@ -644,7 +644,7 @@ export const LeadsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Phone Number"
               value={phone}
@@ -659,7 +659,7 @@ export const LeadsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-brand-text mb-1 uppercase tracking-wide">
                 Priority

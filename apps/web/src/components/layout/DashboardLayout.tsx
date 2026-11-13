@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiRequest } from '../../api/client';
 import {
@@ -21,12 +21,16 @@ import {
   Mail,
   RotateCcw,
   Eye,
+  Menu,
+  X,
 } from 'lucide-react';
 import { MembershipRole } from '@setsuzoku/shared';
 import { Logo } from '../common/Logo';
 
 export const DashboardLayout: React.FC = () => {
   const { user, currentOrg, currentRole, switchRole, logout } = useAuth();
+  const location = useLocation();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [viewsStats, setViewsStats] = useState<{
     totalViews: number;
@@ -44,6 +48,11 @@ export const DashboardLayout: React.FC = () => {
     return null;
   });
   const hasRecordedViewRef = useRef(false);
+
+  // Close mobile sidebar drawer on navigation
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (hasRecordedViewRef.current) return;
@@ -182,114 +191,155 @@ export const DashboardLayout: React.FC = () => {
     }
   };
 
+  const renderSidebarContent = (onNavigate?: () => void) => (
+    <>
+      {/* Navigation grouped */}
+      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
+        {navGroups.map((g, gIdx) => (
+          <div key={gIdx} className="space-y-0.5">
+            {g.group && (
+              <div className="px-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-brand-sidebar-text">
+                {g.group}
+              </div>
+            )}
+            {g.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] font-medium transition-colors duration-150 ${
+                    isActive
+                      ? 'bg-brand-accent text-white'
+                      : 'text-brand-sidebar-text hover:text-white hover:bg-brand-sidebar-hover'
+                  }`
+                }
+              >
+                <item.icon className="w-4 h-4 flex-shrink-0 opacity-80" strokeWidth={1.75} />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      {/* User profile footer */}
+      <div className="p-3 border-t border-brand-sidebar-border bg-[#111317] flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 rounded bg-[#262A30] text-slate-200 flex items-center justify-center text-xs font-semibold flex-shrink-0">
+            {user?.fullName?.charAt(0).toUpperCase() || 'S'}
+          </div>
+          <div className="truncate">
+            <span className="block text-[13px] font-medium text-white truncate leading-tight">
+              {user?.fullName || 'Setsuzoku Admin'}
+            </span>
+            <span className="block text-[11px] text-brand-sidebar-text truncate">
+              {formatRoleName(currentRole)}
+            </span>
+          </div>
+        </div>
+        <button
+          onClick={logout}
+          title="Reset session"
+          className="p-1 text-brand-sidebar-text hover:text-white rounded transition"
+        >
+          <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.75} />
+        </button>
+      </div>
+
+      {/* Support direct address, website & copyright */}
+      <div className="px-3 py-2 border-t border-brand-sidebar-border bg-[#0E1013] text-[10px] text-brand-sidebar-text space-y-1">
+        <div className="flex items-center justify-between text-[11px]">
+          <span>Website:</span>
+          <a
+            href="https://setsuzoku.info"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white font-mono text-[11px] transition inline-flex items-center gap-1"
+          >
+            setsuzoku.info
+            <ExternalLink className="w-2.5 h-2.5 opacity-60" strokeWidth={1.75} />
+          </a>
+        </div>
+        <div className="flex items-center justify-between text-[11px]">
+          <span>Support:</span>
+          <a
+            href="mailto:info@setsuzoku.in"
+            className="hover:text-white font-mono text-[11px] transition"
+          >
+            info@setsuzoku.in
+          </a>
+        </div>
+        <div className="text-[10px] text-slate-500 pt-0.5 truncate border-t border-white/5">
+          &copy; 2026 Setsuzoku Media Labs. All rights reserved.
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex h-screen bg-brand-bg text-brand-text overflow-hidden font-sans">
-      {/* Sidebar */}
-      <aside className="w-60 bg-brand-sidebar flex flex-col flex-shrink-0 border-r border-brand-sidebar-border select-none">
-        {/* Brand header - minimal without tagline */}
-        <div className="h-14 flex items-center px-4 border-b border-brand-sidebar-border">
+      {/* Mobile Drawer Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile Drawer Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 w-64 bg-brand-sidebar z-50 flex flex-col border-r border-brand-sidebar-border shadow-2xl transition-transform duration-200 ease-in-out lg:hidden ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="h-14 flex items-center justify-between px-4 border-b border-brand-sidebar-border flex-shrink-0">
           <Logo variant="sidebar" />
-        </div>
-
-        {/* Navigation grouped */}
-        <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
-          {navGroups.map((g, gIdx) => (
-            <div key={gIdx} className="space-y-0.5">
-              {g.group && (
-                <div className="px-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-brand-sidebar-text">
-                  {g.group}
-                </div>
-              )}
-              {g.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 px-2.5 py-1.5 rounded text-[13px] font-medium transition-colors duration-150 ${
-                      isActive
-                        ? 'bg-brand-accent text-white'
-                        : 'text-brand-sidebar-text hover:text-white hover:bg-brand-sidebar-hover'
-                    }`
-                  }
-                >
-                  <item.icon className="w-4 h-4 flex-shrink-0 opacity-80" strokeWidth={1.75} />
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
-        </nav>
-
-        {/* User profile footer */}
-        <div className="p-3 border-t border-brand-sidebar-border bg-[#111317] flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded bg-[#262A30] text-slate-200 flex items-center justify-center text-xs font-semibold flex-shrink-0">
-              {user?.fullName?.charAt(0).toUpperCase() || 'S'}
-            </div>
-            <div className="truncate">
-              <span className="block text-[13px] font-medium text-white truncate leading-tight">
-                {user?.fullName || 'Setsuzoku Admin'}
-              </span>
-              <span className="block text-[11px] text-brand-sidebar-text truncate">
-                {formatRoleName(currentRole)}
-              </span>
-            </div>
-          </div>
           <button
-            onClick={logout}
-            title="Reset session"
-            className="p-1 text-brand-sidebar-text hover:text-white rounded transition"
+            onClick={() => setMobileSidebarOpen(false)}
+            className="p-1.5 text-brand-sidebar-text hover:text-white rounded transition"
+            aria-label="Close navigation menu"
           >
-            <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.75} />
+            <X className="w-5 h-5" />
           </button>
         </div>
+        {renderSidebarContent(() => setMobileSidebarOpen(false))}
+      </aside>
 
-        {/* Support direct address, website & copyright */}
-        <div className="px-3 py-2 border-t border-brand-sidebar-border bg-[#0E1013] text-[10px] text-brand-sidebar-text space-y-1">
-          <div className="flex items-center justify-between text-[11px]">
-            <span>Website:</span>
-            <a
-              href="https://setsuzoku.info"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white font-mono text-[11px] transition inline-flex items-center gap-1"
-            >
-              setsuzoku.info
-              <ExternalLink className="w-2.5 h-2.5 opacity-60" strokeWidth={1.75} />
-            </a>
-          </div>
-          <div className="flex items-center justify-between text-[11px]">
-            <span>Support:</span>
-            <a
-              href="mailto:info@setsuzoku.in"
-              className="hover:text-white font-mono text-[11px] transition"
-            >
-              info@setsuzoku.in
-            </a>
-          </div>
-          <div className="text-[10px] text-slate-500 pt-0.5 truncate border-t border-white/5">
-            &copy; 2026 Setsuzoku Media Labs. All rights reserved.
-          </div>
+      {/* Desktop Static Sidebar */}
+      <aside className="hidden lg:flex w-60 bg-brand-sidebar flex-col flex-shrink-0 border-r border-brand-sidebar-border select-none">
+        <div className="h-14 flex items-center px-4 border-b border-brand-sidebar-border flex-shrink-0">
+          <Logo variant="sidebar" />
         </div>
+        {renderSidebarContent()}
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Top Header */}
-        <header className="h-14 bg-white border-b border-brand-border flex items-center justify-between px-6 flex-shrink-0">
-          {/* Search bar & Environment indicator */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-72 sm:w-80">
+        <header className="h-14 bg-white border-b border-brand-border flex items-center justify-between px-3 sm:px-4 md:px-6 flex-shrink-0 gap-2">
+          {/* Left: Mobile hamburger + search bar + badges */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-1.5 -ml-1 text-brand-muted hover:text-brand-text hover:bg-gray-100 rounded focus:outline-none transition flex-shrink-0"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="relative hidden md:block w-44 lg:w-72">
               <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" strokeWidth={1.75} />
               <input
                 type="text"
-                placeholder="Search leads, projects, clients, invoices..."
+                placeholder="Search leads, projects, clients..."
                 className="w-full pl-8 pr-3 py-1 text-[13px] bg-brand-bg border border-brand-border rounded focus:outline-none focus:border-brand-accent focus:bg-white transition"
               />
             </div>
 
             <div
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-amber-300/80 bg-amber-50 text-[11px] font-medium text-amber-900 select-none"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded border border-amber-300/80 bg-amber-50 text-[10px] sm:text-[11px] font-medium text-amber-900 select-none whitespace-nowrap"
               title="Demonstration environment with preloaded production workflows"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
@@ -298,7 +348,7 @@ export const DashboardLayout: React.FC = () => {
 
             <div
               data-testid="website-views-badge"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-brand-bg text-[11px] font-medium text-brand-text select-none tabular-nums"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded border border-brand-border bg-brand-bg text-[10px] sm:text-[11px] font-medium text-brand-text select-none tabular-nums whitespace-nowrap"
               title={
                 viewsStats
                   ? `${viewsStats.totalViews.toLocaleString('en-IN')} total website views (${viewsStats.uniqueVisitors.toLocaleString('en-IN')} unique visitors)`
@@ -317,12 +367,12 @@ export const DashboardLayout: React.FC = () => {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             <a
               href="https://setsuzoku.info"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[12px] text-brand-muted hover:text-brand-text font-medium flex items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-white hover:bg-gray-50 transition"
+              className="hidden sm:flex text-[12px] text-brand-muted hover:text-brand-text font-medium items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-white hover:bg-gray-50 transition"
               title="Visit main corporate website (setsuzoku.info)"
             >
               <ExternalLink className="w-3.5 h-3.5 text-brand-muted" strokeWidth={1.75} />
@@ -331,7 +381,7 @@ export const DashboardLayout: React.FC = () => {
 
             <a
               href="mailto:info@setsuzoku.in"
-              className="text-[12px] text-brand-muted hover:text-brand-text font-medium flex items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-white hover:bg-gray-50 transition"
+              className="hidden md:flex text-[12px] text-brand-muted hover:text-brand-text font-medium items-center gap-1.5 px-2.5 py-1 rounded border border-brand-border bg-white hover:bg-gray-50 transition"
               title="Contact enterprise support"
             >
               <Mail className="w-3.5 h-3.5 text-brand-muted" strokeWidth={1.75} />
@@ -352,7 +402,7 @@ export const DashboardLayout: React.FC = () => {
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 top-10 w-80 bg-white rounded shadow-lg border border-brand-border py-2 z-50">
+                <div className="absolute right-0 top-10 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded shadow-lg border border-brand-border py-2 z-50">
                   <div className="px-3 py-1.5 border-b border-brand-border flex items-center justify-between text-xs">
                     <span className="font-semibold text-brand-text">Notifications</span>
                     <button
@@ -387,7 +437,7 @@ export const DashboardLayout: React.FC = () => {
         </header>
 
         {/* Scrollable Viewport */}
-        <main className="flex-1 overflow-y-auto p-6 bg-brand-bg">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-brand-bg">
           <Outlet />
         </main>
       </div>

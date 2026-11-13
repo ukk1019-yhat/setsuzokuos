@@ -442,7 +442,7 @@ export const TasksPage: React.FC = () => {
             placeholder="e.g. Master Foley Sound Mix v1"
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-brand-text mb-1 uppercase tracking-wide">
                 Assignee

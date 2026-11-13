@@ -316,7 +316,7 @@ export const QuotationsPage: React.FC = () => {
             </div>
 
             {/* Document Header */}
-            <div className="grid grid-cols-2 gap-6 text-xs p-4 bg-white border border-brand-border rounded-lg shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-xs p-4 bg-white border border-brand-border rounded-lg shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-lg bg-white p-1 border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
                   <img
@@ -345,8 +345,8 @@ export const QuotationsPage: React.FC = () => {
             </div>
 
             {/* Line Items Table */}
-            <div className="border border-brand-border rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
+            <div className="border border-brand-border rounded-lg overflow-x-auto">
+              <table className="min-w-[480px] w-full text-left text-xs">
                 <thead className="bg-gray-50 border-b border-brand-border font-semibold text-brand-muted uppercase">
                   <tr>
                     <th className="py-2.5 px-4">Service & Description</th>
@@ -423,7 +423,7 @@ export const QuotationsPage: React.FC = () => {
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleCreateQuotation} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-brand-text mb-1 uppercase tracking-wide">
                 Target Client Account *
@@ -467,8 +467,8 @@ export const QuotationsPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="border border-brand-border rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
+            <div className="border border-brand-border rounded-lg overflow-x-auto">
+              <table className="min-w-[540px] w-full text-left text-xs">
                 <thead className="bg-gray-50 border-b border-brand-border text-brand-muted font-semibold uppercase">
                   <tr>
                     <th className="py-2.5 px-3 w-5/12">Service Name</th>
@@ -544,9 +544,9 @@ export const QuotationsPage: React.FC = () => {
           </div>
 
           {/* Discounts, Taxes, and Live Summary */}
-          <div className="grid grid-cols-2 gap-6 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-2">
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
                   label="Discount Amount"
                   type="number"
